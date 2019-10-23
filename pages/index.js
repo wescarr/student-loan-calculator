@@ -1,24 +1,24 @@
-import React from 'react'
+import Col from 'react-bootstrap/Col'
+import Container from 'react-bootstrap/Container'
 import DiscretionaryIncome from '../components/discretionary_income'
 import Head from 'next/head'
+import React from 'react'
+import Row from 'react-bootstrap/Row'
 
 const Home = () => (
-  <div className="container">
+  <>
     <Head>
       <title>Home</title>
       <link rel="icon" href="/favicon.ico" />
-      <link
-        rel="stylesheet"
-        href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
-      />
     </Head>
-
-    <div className="row justify-content-center">
-      <div className="col-md-6">
-        <DiscretionaryIncome />
-      </div>
-    </div>
-  </div>
+    <Container>
+      <Row className="justify-content-center">
+        <Col md={6}>
+          <DiscretionaryIncome />
+        </Col>
+      </Row>
+    </Container>
+  </>
 )
 
 export default Home
