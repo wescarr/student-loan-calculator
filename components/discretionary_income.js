@@ -1,10 +1,23 @@
-import React, {useState} from 'react'
+import React, {useCallback, useState} from 'react'
 import {getDiscretionaryIncome, States} from '../shared/calc'
 
-const DiscretionaryIncome = (props) => {
+const onChangeNumber = set => ({target: {value}}) =>
+  set(value ? parseInt(value, 10) : '')
+
+const DiscretionaryIncome = props => {
   const [income, setIncome] = useState('')
+  const onChangeIncome = useCallback(onChangeNumber(setIncome), [setIncome])
+
   const [dependents, setDependents] = useState(1)
+  const onChangeDependants = useCallback(onChangeNumber(setDependents), [
+    setDependents
+  ])
+
   const [state, setState] = useState(States.LOWER_48)
+  const onChangeState = useCallback(({target: {value}}) => setState(value), [
+    setState
+  ])
+
   const total = income && getDiscretionaryIncome(income, dependents, state)
 
   return (
@@ -18,9 +31,7 @@ const DiscretionaryIncome = (props) => {
             placeholder="$50,000"
             value={income}
             type="number"
-            onChange={({target: {value}}) =>
-              setIncome(value ? parseInt(value, 10) : '')
-            }
+            onChange={onChangeIncome}
           />
           <small className="form-text text-muted">
             This is your taxable income from your most recent tax return.
@@ -30,7 +41,7 @@ const DiscretionaryIncome = (props) => {
           <label>Family Size</label>
           <select
             className="form-control"
-            onChange={({target: {value}}) => setDependents(parseInt(value, 10))}
+            onChange={onChangeDependants}
             value={dependents}>
             {new Array(15).fill(1).map((value, index) => (
               <option key={index} value={index + 1}>
@@ -43,7 +54,7 @@ const DiscretionaryIncome = (props) => {
           <label>State</label>
           <select
             className="form-control"
-            onChange={({target: {value}}) => setState(value)}
+            onChange={onChangeState}
             value={state}>
             <option value={States.LOWER_48}>Lower 48</option>
             <option value={States.ALASKA}>Alaska</option>
