@@ -17,6 +17,9 @@
       "configFile": "./babel.config.js"
     }
   },
+  "globals": {
+    "google": false
+  },
   "plugins": ["react"],
   "rules": {
     "linebreak-style": ["error"],
