@@ -6,6 +6,9 @@ import React, {useCallback, useEffect, useRef, useState} from 'react'
 import Table from 'react-bootstrap/Table'
 import {getLoanPaymentBreakdown} from '../shared/calc'
 
+const currency = num =>
+  num.toLocaleString(undefined, {style: 'currency', currency: 'USD'})
+
 const onChangeNumber = set => ({target: {value}}) =>
   set(value ? parseInt(value, 10) : '')
 
@@ -92,7 +95,7 @@ const LoanRepayment = props => {
           }}
         />
       </Head>
-      <h2>Loan Repayment Calculator</h2>
+      <h2 className="text-center my-4">Loan Repayment Calculator</h2>
       <Form>
         <Form.Group>
           <Form.Label>Loan Amount</Form.Label>
@@ -133,30 +136,20 @@ const LoanRepayment = props => {
           <Col xs={12} sm={6}>
             <Alert variant="primary" className="text-center">
               Monthly Payment
-              <h1>
-                {payment.toLocaleString(undefined, {
-                  style: 'currency',
-                  currency: 'USD'
-                })}
-              </h1>
+              <h1>{currency(payment)}</h1>
             </Alert>
           </Col>
           <Col xs={12} sm={6}>
             <Alert variant="danger" className="text-center">
               Total Interest
-              <h1>
-                {breakdown[breakdown.length - 1].totalInterest.toLocaleString(
-                  undefined,
-                  {style: 'currency', currency: 'USD'}
-                )}
-              </h1>
+              <h1>{currency(breakdown[breakdown.length - 1].totalInterest)}</h1>
             </Alert>
           </Col>
         </Form.Row>
       )}
       {!!breakdown.length && (
         <>
-          <div className="chart" ref={chartRef} />
+          <div className="mx-0 mt-2 mb-3" ref={chartRef} />
           <Table striped size="sm" className="small text-right">
             <thead className="thead-light">
               <tr>
@@ -173,12 +166,12 @@ const LoanRepayment = props => {
               {breakdown.map((r, i) => (
                 <tr key={i}>
                   <td>{i + 1}</td>
-                  <td>{r.balance.toFixed(2)}</td>
-                  <td>{r.payment.toFixed(2)}</td>
-                  <td>{r.interest.toFixed(2)}</td>
-                  <td>{r.principle.toFixed(2)}</td>
-                  <td>{r.endingBalance.toFixed(2)}</td>
-                  <td>{r.totalInterest.toFixed(2)}</td>
+                  <td>{currency(r.balance)}</td>
+                  <td>{currency(r.payment)}</td>
+                  <td>{currency(r.interest)}</td>
+                  <td>{currency(r.principle)}</td>
+                  <td>{currency(r.endingBalance)}</td>
+                  <td>{currency(r.totalInterest)}</td>
                 </tr>
               ))}
             </tbody>
@@ -186,13 +179,9 @@ const LoanRepayment = props => {
         </>
       )}
       <style jsx>{`
-        h2 {
-          text-align: center;
-          margin: 40px 0;
-        }
-
-        .chart {
-          margin: 10px 0 20px;
+        thead th {
+          position: sticky;
+          top: 0;
         }
       `}</style>
     </div>
