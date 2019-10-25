@@ -24,3 +24,61 @@ export const getDiscretionaryIncome = (agi, dependents = 1, state) => {
 
   return Math.max(0, agi - level * 1.5)
 }
+
+// Calculates periodic payment amount for a loan with a constant interest rate
+// and term in years. rateFactor is the number of interest periods per year.
+export const getLoanRePaymentAmount = (
+  balance,
+  interestRate,
+  rateFactor = 12,
+  term = 10
+) => {
+  const Pv = balance
+  const R = interestRate / rateFactor
+  const n = term * 12
+  const P = (Pv * R) / (1 - Math.pow(1 + R, -n))
+
+  return P
+}
+
+export const getLoanPaymentBreakdown = (
+  balance,
+  interestRate,
+  rateFactor = 12,
+  term = 10
+) => {
+  const payment = getLoanRePaymentAmount(
+    balance,
+    interestRate,
+    rateFactor,
+    term
+  )
+
+  const breakdown = []
+  for (let i = 0; i < term * 12; i++) {
+    let last = breakdown[i - 1]
+    if (!last) {
+      last = {
+        balance: balance,
+        endingBalance: balance,
+        totalInterest: 0
+      }
+    }
+
+    const interest = (last.endingBalance * interestRate) / 12
+    const principle = payment - interest
+    const endingBalance = Math.abs(last.endingBalance - principle) // Prevent -0
+    const totalInterest = interest + last.totalInterest
+
+    breakdown.push({
+      balance: last.endingBalance,
+      payment,
+      interest,
+      principle,
+      endingBalance,
+      totalInterest
+    })
+  }
+
+  return breakdown
+}
