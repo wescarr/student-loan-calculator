@@ -25,7 +25,7 @@ const updateChart = (breakdown, chartRef) => {
     })
   )
 
-  var options = {
+  const options = {
     chart: {},
     height: 300,
     legend: {position: 'none'},
@@ -71,9 +71,9 @@ const LoanRepayment = props => {
   }, [breakdown])
 
   useEffect(() => {
-    window.onresize = () => {
-      updateChart(breakdown, chartRef)
-    }
+    const handler = () => updateChart(breakdown, chartRef)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
   }, [breakdown])
 
   return (
@@ -95,10 +95,9 @@ const LoanRepayment = props => {
       <h2>Loan Repayment Calculator</h2>
       <Form>
         <Form.Group>
-          <label>Loan Amount</label>
-          <input
-            className="form-control"
-            placeholder="$10,000"
+          <Form.Label>Loan Amount</Form.Label>
+          <Form.Control
+            placeholder="$50,000"
             value={balance || ''}
             type="number"
             onChange={onBalanceChange}
@@ -107,10 +106,9 @@ const LoanRepayment = props => {
         <Form.Row>
           <Col>
             <Form.Group>
-              <label>Annual Interest Rate</label>
-              <input
+              <Form.Label>Annual Interest Rate</Form.Label>
+              <Form.Control
                 type="number"
-                className="form-control"
                 placeholder="5%"
                 onChange={onRateChange}
                 value={rate}
@@ -119,10 +117,9 @@ const LoanRepayment = props => {
           </Col>
           <Col>
             <Form.Group>
-              <label>Loan Term</label>
-              <input
+              <Form.Label>Loan Term</Form.Label>
+              <Form.Control
                 type="number"
-                className="form-control"
                 placeholder="10 years"
                 onChange={onTermChange}
                 value={term}

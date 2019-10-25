@@ -57,8 +57,6 @@ export const getLoanPaymentBreakdown = (
   const breakdown = []
   for (let i = 0; i < term * 12; i++) {
     let last = breakdown[i - 1]
-    let interest, principle, endingBalance, totalInterest
-
     if (!last) {
       last = {
         balance: balance,
@@ -67,10 +65,10 @@ export const getLoanPaymentBreakdown = (
       }
     }
 
-    interest = (last.endingBalance * interestRate) / 12
-    principle = payment - interest
-    endingBalance = Math.abs(last.endingBalance - principle) // Prevent -0
-    totalInterest = interest + last.totalInterest
+    const interest = (last.endingBalance * interestRate) / 12
+    const principle = payment - interest
+    const endingBalance = Math.abs(last.endingBalance - principle) // Prevent -0
+    const totalInterest = interest + last.totalInterest
 
     breakdown.push({
       balance: last.endingBalance,
