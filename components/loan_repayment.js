@@ -2,15 +2,11 @@ import Alert from 'react-bootstrap/Alert'
 import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import Head from 'next/head'
+import InputGroup from 'react-bootstrap/InputGroup'
 import React, {useCallback, useEffect, useRef, useState} from 'react'
 import Table from 'react-bootstrap/Table'
+import {currency, onChangeNumber} from '../shared/helpers'
 import {getLoanPaymentBreakdown} from '../shared/calc'
-
-const currency = num =>
-  num.toLocaleString(undefined, {style: 'currency', currency: 'USD'})
-
-const onChangeNumber = set => ({target: {value}}) =>
-  set(value ? parseInt(value, 10) : '')
 
 const updateChart = (breakdown, chartRef) => {
   if (!breakdown.length || !(window.google && google.visualization.DataTable)) {
@@ -99,34 +95,49 @@ const LoanRepayment = props => {
       <Form>
         <Form.Group>
           <Form.Label>Loan Amount</Form.Label>
-          <Form.Control
-            placeholder="$50,000"
-            value={balance || ''}
-            type="number"
-            onChange={onBalanceChange}
-          />
+          <InputGroup>
+            <InputGroup.Prepend>
+              <InputGroup.Text>$</InputGroup.Text>
+            </InputGroup.Prepend>
+            <Form.Control
+              placeholder="50000"
+              value={balance}
+              type="number"
+              onChange={onBalanceChange}
+            />
+          </InputGroup>
         </Form.Group>
         <Form.Row>
           <Col>
             <Form.Group>
               <Form.Label>Annual Interest Rate</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder="5%"
-                onChange={onRateChange}
-                value={rate}
-              />
+              <InputGroup>
+                <Form.Control
+                  type="number"
+                  placeholder="5"
+                  onChange={onRateChange}
+                  value={rate}
+                />
+                <InputGroup.Append>
+                  <InputGroup.Text>%</InputGroup.Text>
+                </InputGroup.Append>
+              </InputGroup>
             </Form.Group>
           </Col>
           <Col>
             <Form.Group>
               <Form.Label>Loan Term</Form.Label>
-              <Form.Control
-                type="number"
-                placeholder="10 years"
-                onChange={onTermChange}
-                value={term}
-              />
+              <InputGroup>
+                <Form.Control
+                  type="number"
+                  placeholder="10"
+                  onChange={onTermChange}
+                  value={term}
+                />
+                <InputGroup.Append>
+                  <InputGroup.Text>years</InputGroup.Text>
+                </InputGroup.Append>
+              </InputGroup>
             </Form.Group>
           </Col>
         </Form.Row>
@@ -153,13 +164,13 @@ const LoanRepayment = props => {
           <Table striped size="sm" className="small text-right">
             <thead className="thead-light">
               <tr>
-                <th>#</th>
-                <th>Balance</th>
-                <th>Payment</th>
-                <th>Interest</th>
-                <th>Principle</th>
-                <th>Ending Balance</th>
-                <th>Total Interest</th>
+                <th className="sticky-top">#</th>
+                <th className="sticky-top">Balance</th>
+                <th className="sticky-top">Payment</th>
+                <th className="sticky-top">Interest</th>
+                <th className="sticky-top">Principle</th>
+                <th className="sticky-top">Ending Balance</th>
+                <th className="sticky-top">Total Interest</th>
               </tr>
             </thead>
             <tbody>
@@ -178,12 +189,6 @@ const LoanRepayment = props => {
           </Table>
         </>
       )}
-      <style jsx>{`
-        thead th {
-          position: sticky;
-          top: 0;
-        }
-      `}</style>
     </div>
   )
 }

@@ -4,9 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import React, {useCallback, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import {getDiscretionaryIncome, States} from '../shared/calc'
-
-const onChangeNumber = set => ({target: {value}}) =>
-  set(value ? parseInt(value, 10) : '')
+import {currency, onChangeNumber} from '../shared/helpers'
 
 const DiscretionaryIncome = props => {
   const [income, setIncome] = useState('')
@@ -26,7 +24,7 @@ const DiscretionaryIncome = props => {
 
   return (
     <div {...props}>
-      <h2>Discretionary Income Calculator</h2>
+      <h2 className="text-center my-5">Discretionary Income Calculator</h2>
       <Form>
         <Form.Group>
           <Form.Label>Adjusted Gross Income</Form.Label>
@@ -73,17 +71,7 @@ const DiscretionaryIncome = props => {
           </Col>
         </Row>
       </Form>
-      {income && <h1>${total.toLocaleString()}</h1>}
-      <style jsx>{`
-        h1,
-        h2 {
-          text-align: center;
-        }
-
-        h2 {
-          margin: 40px 0;
-        }
-      `}</style>
+      {income && <h1 className="text-center">{currency(total)}</h1>}
     </div>
   )
 }
