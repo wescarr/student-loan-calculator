@@ -25,13 +25,36 @@ export const getDiscretionaryIncome = (agi, dependents = 1, state) => {
   return Math.max(0, agi - level * 1.5)
 }
 
+// TODO(wes): Inforce minimum payments
+export const fixedRateRepayment = (loan, term = 10) => {
+  const {balance, rate} = loan
+  const payment = getFixedPayment(balance, rate, term)
+  const breakdown = getFixedBreakdown(payment, balance, rate, term)
+
+  return {payment, breakdown}
+}
+
+export const graduatedRepayment = (loan, term = 10) => {
+  const {balance, rate} = loan
+  const {payment, growthRate} = getGraduatedPayment(balance, rate, term)
+  const breakdown = getGraduatedBreakdown(
+    payment,
+    balance,
+    rate,
+    term,
+    growthRate
+  )
+
+  return {payment, breakdown}
+}
+
 // Calculates periodic payment amount for a loan with a constant interest rate
 // and term in years. rateFactor is the number of interest periods per year.
-export const getLoanRePaymentAmount = (
+export const getFixedPayment = (
   balance,
   interestRate,
-  rateFactor = 12,
-  term = 10
+  term = 10,
+  rateFactor = 12
 ) => {
   const Pv = balance
   const R = interestRate / rateFactor
@@ -41,34 +64,58 @@ export const getLoanRePaymentAmount = (
   return P
 }
 
-export const getLoanPaymentBreakdown = (
-  balance,
-  interestRate,
-  rateFactor = 12,
-  term = 10
-) => {
-  const payment = getLoanRePaymentAmount(
+export const getGraduatedPayment = (balance, interestRate, term) => {
+  // Min payment must be half of standard fixed payment
+  let P = getFixedPayment(balance, interestRate, term) / 2
+
+  // First payment must be only interest if possible
+  P = Math.max(P, (balance * interestRate) / 12)
+  // Last payment can't be 3x initial payment
+  const growthRate = Math.pow(3, 1 / (term / 2 - 1)) - 1
+
+  // Adjust initial payment until ending balance is 0
+  let breakdown = getGraduatedBreakdown(
+    P,
     balance,
     interestRate,
-    rateFactor,
-    term
+    term,
+    growthRate
   )
+  while (breakdown[breakdown.length - 1].endingBalance > 0) {
+    P++
+    breakdown = getGraduatedBreakdown(
+      P,
+      balance,
+      interestRate,
+      term,
+      growthRate
+    )
+  }
 
+  // If payments is less than term, decrease growth rate until it matches
+
+  return {payment: P, growthRate}
+}
+
+export const getFixedBreakdown = (payment, balance, interestRate, term) => {
   const breakdown = []
   for (let i = 0; i < term * 12; i++) {
     let last = breakdown[i - 1]
     if (!last) {
       last = {
-        balance: balance,
+        balance,
+        payment,
         endingBalance: balance,
-        totalInterest: 0
+        totalInterest: 0,
+        totalPayment: 0
       }
     }
 
     const interest = (last.endingBalance * interestRate) / 12
     const principle = payment - interest
-    const endingBalance = Math.abs(last.endingBalance - principle) // Prevent -0
+    const endingBalance = last.endingBalance - principle
     const totalInterest = interest + last.totalInterest
+    const totalPayment = last.totalPayment + payment
 
     breakdown.push({
       balance: last.endingBalance,
@@ -76,8 +123,58 @@ export const getLoanPaymentBreakdown = (
       interest,
       principle,
       endingBalance,
-      totalInterest
+      totalInterest,
+      totalPayment
     })
+  }
+
+  return breakdown
+}
+
+export const getGraduatedBreakdown = (
+  initialPayment,
+  balance,
+  interestRate,
+  term,
+  growthRate = 0.05
+) => {
+  const breakdown = []
+  for (let i = 0; i < term * 12; i++) {
+    let last = breakdown[i - 1]
+    if (!last) {
+      last = {
+        balance,
+        payment: initialPayment,
+        endingBalance: balance,
+        totalInterest: 0,
+        totalPayment: 0
+      }
+    }
+
+    let payment = last.payment
+    // Increase payment every 2 yearss
+    if (i > 0 && i % 24 === 0) {
+      payment = payment * (1 + growthRate)
+    }
+    const interest = (last.endingBalance * interestRate) / 12
+    const principle = payment - interest
+    const endingBalance = last.endingBalance - principle
+    const totalInterest = interest + last.totalInterest
+    const totalPayment = last.totalPayment + payment
+
+    breakdown.push({
+      balance: last.endingBalance,
+      payment,
+      interest,
+      principle,
+      endingBalance,
+      totalInterest,
+      totalPayment
+    })
+
+    if (last.endingBalance <= 0) {
+      break
+    }
   }
 
   return breakdown

@@ -3,10 +3,10 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import Head from 'next/head'
 import InputGroup from 'react-bootstrap/InputGroup'
+import PaymentTable from './payment_table'
 import React, {useCallback, useEffect, useRef, useState} from 'react'
-import Table from 'react-bootstrap/Table'
 import {currency, onChangeNumber} from '../shared/helpers'
-import {getLoanPaymentBreakdown} from '../shared/calc'
+import {getFixedPayment, getFixedBreakdown} from '../shared/calc'
 
 const updateChart = (breakdown, chartRef) => {
   if (!breakdown.length || !(window.google && google.visualization.DataTable)) {
@@ -59,11 +59,13 @@ const LoanRepayment = props => {
   const onRateChange = useCallback(onChangeNumber(setRate), [setRate])
   const onTermChange = useCallback(onChangeNumber(setTerm), [setTerm])
 
-  const breakdown =
+  const payment =
     balance && rate && term
-      ? getLoanPaymentBreakdown(balance, rate / 100, 12, term)
-      : []
-  const [{payment} = {}] = breakdown
+      ? getFixedPayment(balance, rate / 100, term)
+      : undefined
+  const breakdown = payment
+    ? getFixedBreakdown(payment, balance, rate / 100, term)
+    : []
 
   useEffect(() => {
     updateChart(breakdown, chartRef)
@@ -161,32 +163,7 @@ const LoanRepayment = props => {
       {!!breakdown.length && (
         <>
           <div className="mx-0 mt-2 mb-3" ref={chartRef} />
-          <Table striped size="sm" className="small text-right">
-            <thead className="thead-light">
-              <tr>
-                <th className="sticky-top">#</th>
-                <th className="sticky-top">Balance</th>
-                <th className="sticky-top">Payment</th>
-                <th className="sticky-top">Interest</th>
-                <th className="sticky-top">Principle</th>
-                <th className="sticky-top">Ending Balance</th>
-                <th className="sticky-top">Total Interest</th>
-              </tr>
-            </thead>
-            <tbody>
-              {breakdown.map((r, i) => (
-                <tr key={i}>
-                  <td>{i + 1}</td>
-                  <td>{currency(r.balance)}</td>
-                  <td>{currency(r.payment)}</td>
-                  <td>{currency(r.interest)}</td>
-                  <td>{currency(r.principle)}</td>
-                  <td>{currency(r.endingBalance)}</td>
-                  <td>{currency(r.totalInterest)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
+          <PaymentTable payments={breakdown} />
         </>
       )}
     </div>
