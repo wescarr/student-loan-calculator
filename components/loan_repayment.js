@@ -12,9 +12,9 @@ import {getLoanPaymentBreakdown} from '../shared/calc'
 const Line = dynamic(import('react-chartjs-2').then(mod => mod.Line))
 
 const LoanRepayment = props => {
-  const [balance, setBalance] = useState('100000')
-  const [rate, setRate] = useState('5')
-  const [term, setTerm] = useState('10')
+  const [balance, setBalance] = useState(100000)
+  const [rate, setRate] = useState(5)
+  const [term, setTerm] = useState(10)
 
   const onBalanceChange = useCallback(onChangeNumber(setBalance), [setBalance])
   const onRateChange = useCallback(onChangeNumber(setRate), [setRate])
