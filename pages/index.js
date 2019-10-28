@@ -101,6 +101,7 @@ const Home = () => {
 
   let repayments, chartData, chartOptions
   if (loan) {
+    // Colors: https://www.colorbox.io/#steps=10#hue_start=359#hue_end=0#hue_curve=easeInOutQuad#sat_start=43#sat_end=78#sat_curve=easeOutQuad#sat_rate=136#lum_start=100#lum_end=100#lum_curve=easeOutQuad#minor_steps_map=none
     repayments = [
       {label: 'Standard Fixed', color: '#06FF54', ...fixedRateRepayment(loan)},
       {label: 'Graduated', color: '#1388FF', ...fixedRateRepayment(loan, 25)},
