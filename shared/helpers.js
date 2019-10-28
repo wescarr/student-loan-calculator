@@ -1,5 +1,9 @@
 export const onChangeNumber = set => ({target: {value}}) =>
-  set(value ? parseInt(value, 10) : '')
+  set(value ? parseFloat(value, 10) : '')
 
-export const currency = num =>
-  num.toLocaleString(undefined, {style: 'currency', currency: 'USD'})
+export const currency = (num, round = true) =>
+  (round ? Math.round(num) : num).toLocaleString(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0
+  })
