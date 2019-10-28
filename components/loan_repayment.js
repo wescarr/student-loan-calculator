@@ -3,57 +3,18 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import Head from 'next/head'
 import InputGroup from 'react-bootstrap/InputGroup'
-import React, {useCallback, useEffect, useRef, useState} from 'react'
+import React, {useCallback, useState} from 'react'
 import Table from 'react-bootstrap/Table'
+import dynamic from 'next/dynamic'
 import {currency, onChangeNumber} from '../shared/helpers'
 import {getLoanPaymentBreakdown} from '../shared/calc'
 
-const updateChart = (breakdown, chartRef) => {
-  if (!breakdown.length || !(window.google && google.visualization.DataTable)) {
-    return
-  }
-
-  const data = new google.visualization.DataTable()
-  data.addColumn('number', 'Payment')
-  data.addColumn('number', 'Balance')
-  data.addColumn('number', 'Interest')
-
-  data.addRows(
-    breakdown.map((r, i) => {
-      return [i + 1, r.endingBalance, r.totalInterest]
-    })
-  )
-
-  const options = {
-    chart: {},
-    height: 300,
-    legend: {position: 'none'},
-    series: {
-      0: {lineWidth: 1},
-      1: {lineWidth: 10, lineDashStyle: [4, 4]}
-    },
-    colors: ['#004085', '#721c24'],
-    axis: {
-      x: {
-        0: {position: 'none', label: ''}
-      }
-    },
-    hAxis: {
-      title: '',
-      viewWindow: {max: breakdown.length, min: 1},
-      viewWindowMode: 'maximized'
-    }
-  }
-
-  const chart = new google.charts.Line(chartRef.current)
-  chart.draw(data, google.charts.Line.convertOptions(options))
-}
+const Line = dynamic(import('react-chartjs-2').then(mod => mod.Line))
 
 const LoanRepayment = props => {
-  const [balance, setBalance] = useState('')
-  const [rate, setRate] = useState('')
-  const [term, setTerm] = useState('')
-  const chartRef = useRef(null)
+  const [balance, setBalance] = useState(100000)
+  const [rate, setRate] = useState(5)
+  const [term, setTerm] = useState(10)
 
   const onBalanceChange = useCallback(onChangeNumber(setBalance), [setBalance])
   const onRateChange = useCallback(onChangeNumber(setRate), [setRate])
@@ -63,34 +24,61 @@ const LoanRepayment = props => {
     balance && rate && term
       ? getLoanPaymentBreakdown(balance, rate / 100, 12, term)
       : []
+
   const [{payment} = {}] = breakdown
 
-  useEffect(() => {
-    updateChart(breakdown, chartRef)
-  }, [breakdown])
+  const options = {
+    legend: {
+      display: false
+    },
+    scales: {
+      xAxes: [
+        {
+          ticks: {
+            callback: (value, index) => (index % 2 === 0 ? value : null)
+          }
+        }
+      ],
+      yAxes: [
+        {
+          ticks: {
+            callback: (value, index) =>
+              index % 2 === 0 ? `$${Math.round(value / 1000)}k` : null
+          }
+        }
+      ]
+    },
+    tooltips: {
+      displayColors: false,
+      callbacks: {
+        label: (item, data) =>
+          `${data.datasets[item.datasetIndex].label}: ${currency(item.yLabel)}`
+      }
+    }
+  }
 
-  useEffect(() => {
-    const handler = () => updateChart(breakdown, chartRef)
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [breakdown])
+  const dataset = (label, data, color) => ({
+    label,
+    data,
+    fill: false,
+    lineTension: 0.1,
+    borderColor: color,
+    borderWidth: 2,
+    pointRadius: 0,
+    pointHoverBackgroundColor: color,
+    pointHitRadius: 5
+  })
+
+  const data = {
+    labels: breakdown.map((r, i) => `Payment ${i + 1}`),
+    datasets: [
+      dataset('Balance', breakdown.map(r => r.balance), '#004085'),
+      dataset('Interest', breakdown.map(r => r.totalInterest), '#721c24')
+    ]
+  }
 
   return (
     <div {...props}>
-      <Head>
-        <script
-          type="text/javascript"
-          src="https://www.gstatic.com/charts/loader.js"
-        />
-        <script
-          type="text/javascript"
-          dangerouslySetInnerHTML={{
-            __html: `
-        google.charts.load('current', {'packages':['line']});
-        `
-          }}
-        />
-      </Head>
       <h2 className="text-center my-4">Loan Repayment Calculator</h2>
       <Form>
         <Form.Group>
@@ -160,7 +148,9 @@ const LoanRepayment = props => {
       )}
       {!!breakdown.length && (
         <>
-          <div className="mx-0 mt-2 mb-3" ref={chartRef} />
+          <div className="mx-0 mt-2 mb-3">
+            <Line data={data} options={options} />
+          </div>
           <Table striped size="sm" className="small text-right">
             <thead className="thead-light">
               <tr>
