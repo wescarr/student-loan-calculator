@@ -9,7 +9,7 @@ import {onChangeNumber} from '../shared/helpers'
 const Loan = props => {
   const [balance, setBalance] = useState(60000)
   const [rate, setRate] = useState(5)
-  const [type, setType] = useState(Types.DIRECT_SUBSIDIZED)
+  const [type, setType] = useState('DIRECT_SUBSIDIZED')
 
   useEffect(() => {
     if (balance && rate && type) {
@@ -54,6 +54,8 @@ const Loan = props => {
                 value={balance}
                 type="number"
                 onChange={onBalanceChange}
+                min={1000}
+                step={1000}
               />
             </InputGroup>
           </Form.Group>
@@ -67,6 +69,9 @@ const Loan = props => {
                 placeholder="5"
                 onChange={onRateChange}
                 value={rate}
+                min={1}
+                max={10}
+                step={0.1}
               />
               <InputGroup.Append>
                 <InputGroup.Text>%</InputGroup.Text>

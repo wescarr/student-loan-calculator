@@ -15,7 +15,7 @@ export const Types = {
   PRIVATE: 'Private Loan'
 }
 
-export const TAX_FILING_STATUS = {
+export const TaxFilingStatus = {
   SINGLE: 'Single',
   MARRIED_JOINT: 'Married filing jointly',
   MARRIED_SEPARATE: 'Married filing separately',
