@@ -52,7 +52,7 @@ const PaymentSummary = props => {
 
   return (
     <Alert variant="secondary" className="text-center position-relative">
-      <div className="position-absolute rounded-circle d-inline-block" />
+      <div className="position-absolute border border-white rounded-circle d-inline-block" />
       <span>
         {label} ({Math.round(breakdown.length / 12)} years)
       </span>
