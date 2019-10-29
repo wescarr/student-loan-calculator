@@ -129,7 +129,7 @@ export const getGraduatedPayment = (balance, interestRate, term) => {
   // If breakdown is less than full term, decrease final payment until breakdown
   // is over the entire term
   let lastP = P * Math.pow(1 + growthRate, term / 2 - 1)
-  while (breakdown.length < term * 12) {
+  while (lastP > P + 1 && breakdown.length < term * 12) {
     lastP--
     growthRate = Math.pow(lastP / P, 1 / (term / 2 - 1)) - 1
 
