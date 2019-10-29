@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useState} from 'react'
-import {Types} from '../shared/loan_config'
+import {LoanTypes} from '../shared/loan_config'
 import {onChangeNumber} from '../shared/helpers'
 
 const Loan = props => {
@@ -31,7 +31,7 @@ const Loan = props => {
               <option disabled value="">
                 Select a loan type
               </option>
-              {Object.entries(Types).map(([id, name]) => (
+              {Object.entries(LoanTypes).map(([id, name]) => (
                 <option key={id} value={id}>
                   {name}
                 </option>

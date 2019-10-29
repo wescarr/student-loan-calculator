@@ -13,8 +13,7 @@ import React, {useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import dynamic from 'next/dynamic'
 import {currency} from '../shared/helpers'
-import {fixedRateRepayment, graduatedRepayment} from '../shared/calc'
-import {Types} from '../shared/loan_config'
+import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
@@ -39,42 +38,52 @@ const dataset = (label, data, bgColor) => ({
 const getChartData = (repayments, attr) => {
   return {
     labels: repayments[0].breakdown.slice(0, 25).map((r, i) => `${i + 1}`),
-    datasets: repayments.map(r =>
-      dataset(r.label, getYearBreakdown(r.breakdown, attr), r.color)
-    )
+    datasets: repayments
+      .filter(r => r.eligible)
+      .map(r => dataset(r.label, getYearBreakdown(r.breakdown, attr), r.color))
   }
 }
 
 const PaymentSummary = props => {
-  const {color, label, breakdown} = props
+  const {color, label, eligible, breakdown} = props
   const [first] = breakdown
   const last = breakdown[breakdown.length - 1]
 
   return (
-    <Alert variant="secondary" className="text-center position-relative">
+    <Alert
+      variant="secondary"
+      className={`text-center position-relative ${
+        !eligible ? 'text-muted' : ''
+      }`}>
       <div className="position-absolute border border-white rounded-circle d-inline-block" />
       <span>
         {label} ({Math.round(breakdown.length / 12)} years)
       </span>
-      <div className="d-flex flex-row mt-2">
-        <div className="w-50 border-right border-white">
-          {first.payment === last.payment ? (
-            <h5 className="mb-0">{currency(first.payment)}</h5>
-          ) : (
-            <h5 className="mb-0">
-              {currency(first.payment)} - {currency(last.payment)}
-            </h5>
-          )}
-          Per month
+      {eligible ? (
+        <div className="d-flex flex-row mt-2">
+          <div className="w-50 border-right border-white">
+            {first.payment === last.payment ? (
+              <h5 className="mb-0">{currency(first.payment)}</h5>
+            ) : (
+              <h5 className="mb-0">
+                {currency(first.payment)} - {currency(last.payment)}
+              </h5>
+            )}
+            Per month
+          </div>
+          <div className="w-50">
+            <h5 className="mb-0">{currency(last.totalInterest)}</h5> Total
+            interest
+          </div>
         </div>
-        <div className="w-50">
-          <h5 className="mb-0">{currency(last.totalInterest)}</h5> Total
-          interest
-        </div>
-      </div>
+      ) : (
+        <p className="my-1">
+          Your loan type is not elgible for this repayment plan
+        </p>
+      )}
       <style jsx>{`
         div.rounded-circle {
-          background-color: ${color};
+          background-color: ${eligible ? color : '#d6d8db'};
           width: 15px;
           height: 15px;
           top: 10px;
@@ -88,7 +97,8 @@ const PaymentSummary = props => {
 PaymentSummary.propTypes = {
   color: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  breakdown: PropTypes.array.isRequired
+  breakdown: PropTypes.array.isRequired,
+  eligible: PropTypes.bool.isRequired
 }
 
 const Home = () => {
@@ -97,24 +107,15 @@ const Home = () => {
   const [editIncome, setEditIncome] = useState(false)
   const [chartType, setChartType] = useState('endingBalance')
 
-  const isUnkownLoan = loan && !Types[loan.type]
+  const isUnkownLoan = loan && !LoanTypes[loan.type]
 
   let repayments, chartData, chartOptions
   if (loan) {
-    // Colors: https://www.colorbox.io/#steps=10#hue_start=359#hue_end=0#hue_curve=easeInOutQuad#sat_start=43#sat_end=78#sat_curve=easeOutQuad#sat_rate=136#lum_start=100#lum_end=100#lum_curve=easeOutQuad#minor_steps_map=none
     repayments = [
-      {label: 'Standard Fixed', color: '#06FF54', ...fixedRateRepayment(loan)},
-      {label: 'Graduated', color: '#FF2A00', ...graduatedRepayment(loan)},
-      {
-        label: 'Fixed Extended',
-        color: '#1388FF',
-        ...fixedRateRepayment(loan, 25)
-      },
-      {
-        label: 'Graduated Extended',
-        color: '#FF9400',
-        ...graduatedRepayment(loan, 25)
-      }
+      Plans.STANDARD_FIXED(loan),
+      Plans.GRADUATED(loan),
+      Plans.FIXED_EXTENDED(loan),
+      Plans.GRADUATED_EXTENDED(loan)
     ]
 
     chartOptions = {
@@ -226,8 +227,11 @@ const Home = () => {
             )}
             {isUnkownLoan && (
               <p className="text-center p-3">
-                Instruction here on what to do if you don&apos;t know your loan
-                type
+                You can retrieve your loan information from the{' '}
+                <a href="https://nslds.ed.gov">
+                  National Student Loan Data System
+                </a>{' '}
+                or by contacting your loan holder.
               </p>
             )}
           </Col>
