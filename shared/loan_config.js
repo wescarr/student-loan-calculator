@@ -1,4 +1,6 @@
-export const Types = {
+import {fixedRateRepayment, graduatedRepayment} from './calc'
+
+export const LoanTypes = {
   DIRECT_SUBSIDIZED: 'Direct Subsidized Loan',
   DIRECT_UNSUBSIDIZED: 'Direct Unsubsidized Loan',
   STAFFORD_SUBSIDIZED: 'Subsidized Federal Stafford Loan',
@@ -20,4 +22,66 @@ export const TaxFilingStatus = {
   MARRIED_JOINT: 'Married filing jointly',
   MARRIED_SEPARATE: 'Married filing separately',
   HEAD_OF_HOUSEHOLD: 'Head of household'
+}
+
+// Colors: https://www.colorbox.io/#steps=10#hue_start=359#hue_end=0#hue_curve=easeInOutQuad#sat_start=43#sat_end=78#sat_curve=easeOutQuad#sat_rate=136#lum_start=100#lum_end=100#lum_curve=easeOutQuad#minor_steps_map=none
+export const RepaymentPlans = {
+  STANDARD_FIXED: loan => ({
+    label: 'Standard Fixed',
+    color: '#06FF54',
+    eligible: true,
+    ...fixedRateRepayment(loan)
+  }),
+  FIXED_EXTENDED: loan => ({
+    label: 'Fixed Extended',
+    color: '#1388FF',
+    eligible: [
+      'DIRECT_SUBSIDIZED',
+      'DIRECT_UNSUBSIDIZED',
+      'STAFFORD_SUBSIDIZED',
+      'STAFFORD_UNSUBSIDIZED',
+      'DIRECT_PLUS_PRO',
+      'DIRECT_PLUS_PARENTS',
+      'DIRECT_PLUS_CONSOLIDATED',
+      'DIRECT_CONSOLIDATED_SUBSIDIZED',
+      'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+      'FFEL_CONSOLIDATED'
+    ].includes(loan.type),
+    ...fixedRateRepayment(loan, 25)
+  }),
+  GRADUATED: loan => ({
+    label: 'Graduated',
+    color: '#FF2A00',
+    eligible: [
+      'DIRECT_SUBSIDIZED',
+      'DIRECT_UNSUBSIDIZED',
+      'DIRECT_PLUS_PRO',
+      'DIRECT_PLUS_PARENTS',
+      'DIRECT_CONSOLIDATED_SUBSIDIZED',
+      'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+      'STAFFORD_SUBSIDIZED',
+      'STAFFORD_UNSUBSIDIZED',
+      'FFEL_CONSOLIDATED',
+      'FFEL_PRO',
+      'FFEL_PARENTS'
+    ].includes(loan.type),
+    ...graduatedRepayment(loan)
+  }),
+  GRADUATED_EXTENDED: loan => ({
+    label: 'Graduated Extended',
+    color: '#FF9400',
+    eligible: [
+      'DIRECT_SUBSIDIZED',
+      'DIRECT_UNSUBSIDIZED',
+      'STAFFORD_SUBSIDIZED',
+      'STAFFORD_UNSUBSIDIZED',
+      'DIRECT_PLUS_PRO',
+      'DIRECT_PLUS_PARENTS',
+      'DIRECT_PLUS_CONSOLIDATED',
+      'DIRECT_CONSOLIDATED_SUBSIDIZED',
+      'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+      'FFEL_CONSOLIDATED'
+    ].includes(loan.type),
+    ...graduatedRepayment(loan, 25)
+  })
 }
