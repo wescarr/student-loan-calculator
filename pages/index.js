@@ -1,7 +1,5 @@
 import Alert from 'react-bootstrap/Alert'
 import Badge from 'react-bootstrap/Badge'
-import ToggleButton from 'react-bootstrap/ToggleButton'
-import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Form from 'react-bootstrap/Form'
@@ -11,9 +9,12 @@ import Loan from '../components/loan'
 import PropTypes from 'prop-types'
 import React, {useState} from 'react'
 import Row from 'react-bootstrap/Row'
+import ToggleButton from 'react-bootstrap/ToggleButton'
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import dynamic from 'next/dynamic'
-import {currency} from '../shared/helpers'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
+import {currency} from '../shared/helpers'
+import {useToggle} from '@standardlabs/react-hooks'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
@@ -103,8 +104,8 @@ PaymentSummary.propTypes = {
 
 const Home = () => {
   const [loan, setLoan] = useState()
-  const [income, setIncome] = useState()
-  const [editIncome, setEditIncome] = useState(false)
+  const [income, setIncome] = useState() // eslint-disable-line no-unused-vars
+  const [editIncome, onToggleEditIncome] = useToggle(false)
   const [chartType, setChartType] = useState('endingBalance')
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
@@ -169,13 +170,11 @@ const Home = () => {
                 {editIncome ? (
                   <IncomeForm onChange={setIncome} />
                 ) : (
-                  <small
-                    className="text-muted"
-                    onClick={() => setEditIncome(true)}>
+                  <small className="text-muted" onClick={onToggleEditIncome}>
                     <Badge
                       variant="secondary"
                       className="rounded-circle p-0"
-                      onClick={() => setEditIncome(true)}>
+                      onClick={onToggleEditIncome}>
                       <span className="plus">+</span>
                     </Badge>{' '}
                     Enter your income to see additional options

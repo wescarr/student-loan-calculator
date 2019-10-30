@@ -2,37 +2,30 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
 import {States} from '../shared/calc'
 import {TaxFilingStatus} from '../shared/loan_config'
-import {onChangeNumber} from '../shared/helpers'
 
-const IncomeForm = props => {
-  const [income, setIncome] = useState(45000)
-  const [dependents, setDependents] = useState(1)
-  const [state, setState] = useState(States.LOWER_48)
-  const [filing, setFiling] = useState(TaxFilingStatus.SINGLE)
+import {
+  asInt,
+  useDeferredOnChange,
+  useOnChange,
+} from '@standardlabs/react-hooks'
 
-  const onChangeIncome = useCallback(onChangeNumber(setIncome), [setIncome])
-  const onChangeDependants = useCallback(onChangeNumber(setDependents), [
-    setDependents
-  ])
-  const onChangeState = useCallback(({target: {value}}) => setState(value), [
-    setState
-  ])
-
-  const onChangeFiling = useCallback(({target: {value}}) => setFiling(value), [
-    setFiling
-  ])
+const IncomeForm = ({onChange, ...props}) => {
+  const [income, onChangeIncome] = useDeferredOnChange(45000, 150, asInt)
+  const [dependents, onChangeDependants] = useOnChange(1, asInt)
+  const [state, onChangeState] = useOnChange(States.LOWER_48)
+  const [filing, onChangeFiling] = useOnChange(TaxFilingStatus.SINGLE)
 
   useEffect(() => {
-    if (income && dependents && state && filing) {
-      props.onChange({income, dependents, state, filing})
+    if (income.deferred && dependents && state && filing) {
+      onChange({income: income.deferred, dependents, state, filing})
     }
-  }, [income, dependents, state, filing])
+  }, [onChange, income.deferred, dependents, state, filing])
 
   return (
-    <Form>
+    <Form {...props}>
       <Form.Row>
         <Col>
           <Form.Group>
@@ -43,7 +36,7 @@ const IncomeForm = props => {
               </InputGroup.Prepend>
               <Form.Control
                 placeholder="50000"
-                value={income}
+                value={income.value}
                 type="number"
                 onChange={onChangeIncome}
               />

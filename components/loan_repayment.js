@@ -3,28 +3,32 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PaymentTable from './payment_table'
-import React, {useCallback, useState} from 'react'
+import React from 'react'
 import dynamic from 'next/dynamic'
-import {currency, onChangeNumber} from '../shared/helpers'
+import {currency} from '../shared/helpers'
 import {getFixedPayment, getFixedBreakdown} from '../shared/calc'
+
+import {
+  asFloat,
+  asInt,
+  useDeferredOnChange,
+  useOnChange
+} from '@standardlabs/react-hooks'
 
 const Line = dynamic(import('react-chartjs-2').then(mod => mod.Line))
 
 const LoanRepayment = props => {
-  const [balance, setBalance] = useState(10000)
-  const [rate, setRate] = useState(5)
-  const [term, setTerm] = useState(10)
-
-  const onBalanceChange = useCallback(onChangeNumber(setBalance), [setBalance])
-  const onRateChange = useCallback(onChangeNumber(setRate), [setRate])
-  const onTermChange = useCallback(onChangeNumber(setTerm), [setTerm])
+  const [balance, onBalanceChange] = useDeferredOnChange(10000, 150, asInt)
+  const [rate, onRateChange] = useOnChange(5, asFloat)
+  const [term, onTermChange] = useOnChange(10, asFloat)
 
   const payment =
-    balance && rate && term
-      ? getFixedPayment(balance, rate / 100, term)
+    balance.deferred && rate && term
+      ? getFixedPayment(balance.deferred, rate / 100, term)
       : undefined
+
   const breakdown = payment
-    ? getFixedBreakdown(payment, balance, rate / 100, term)
+    ? getFixedBreakdown(payment, balance.deferred, rate / 100, term)
     : []
 
   const options = {
@@ -89,7 +93,7 @@ const LoanRepayment = props => {
             </InputGroup.Prepend>
             <Form.Control
               placeholder="50000"
-              value={balance}
+              value={balance.value}
               type="number"
               onChange={onBalanceChange}
             />
