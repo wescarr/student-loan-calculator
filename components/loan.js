@@ -1,8 +1,10 @@
 import Col from 'react-bootstrap/Col'
+import Dropdown from 'react-bootstrap/Dropdown'
+import DropdownButton from 'react-bootstrap/DropdownButton'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {LoanTypes} from '../shared/loan_config'
 import {
   asFloat,
@@ -15,12 +17,20 @@ const Loan = ({onChange, ...props}) => {
   const [balance, onBalanceChange] = useDeferredOnChange(60000, 150, asInt)
   const [rate, onRateChange] = useDeferredOnChange(5, 150, asFloat)
   const [type, onTypeChange] = useOnChange('DIRECT_SUBSIDIZED')
+  const [plan, onPlanChange] = useState()
+  const [payments, onPaymentsChange] = useDeferredOnChange(0, 150, asInt)
 
   useEffect(() => {
     if (balance.deferred && rate.deferred && type) {
-      onChange({balance: balance.deferred, rate: rate.deferred / 100, type})
+      onChange({
+        balance: balance.deferred,
+        rate: rate.deferred / 100,
+        type,
+        payments: payments.deferred,
+        plan
+      })
     }
-  }, [onChange, balance.deferred, rate.deferred, type])
+  }, [onChange, balance.deferred, rate.deferred, type, payments.deferred, plan])
 
   return (
     <div {...props}>
@@ -43,9 +53,9 @@ const Loan = ({onChange, ...props}) => {
         </Form.Group>
       </Form>
       <Form.Row>
-        <Col>
+        <Col xs={12} md={6}>
           <Form.Group>
-            <Form.Label>Loan amount</Form.Label>
+            <Form.Label>Current balance & Interest rate</Form.Label>
             <InputGroup>
               <InputGroup.Prepend>
                 <InputGroup.Text>$</InputGroup.Text>
@@ -58,13 +68,6 @@ const Loan = ({onChange, ...props}) => {
                 min={1000}
                 step={1000}
               />
-            </InputGroup>
-          </Form.Group>
-        </Col>
-        <Col>
-          <Form.Group>
-            <Form.Label>Annual interest rate</Form.Label>
-            <InputGroup>
               <Form.Control
                 type="number"
                 placeholder="5"
@@ -77,6 +80,34 @@ const Loan = ({onChange, ...props}) => {
               <InputGroup.Append>
                 <InputGroup.Text>%</InputGroup.Text>
               </InputGroup.Append>
+            </InputGroup>
+          </Form.Group>
+        </Col>
+        <Col xs={12} md={6}>
+          <Form.Group>
+            <Form.Label>Have you made any payments?</Form.Label>
+            <InputGroup>
+              <Form.Control
+                value={payments.value}
+                onChange={onPaymentsChange}
+                type="number"
+                placeholder="0"
+                min={0}
+                max={300}
+              />
+              <DropdownButton
+                as={InputGroup.Append}
+                variant="outline-secondary"
+                title={plan || 'Payment plan'}
+                onSelect={onPlanChange}
+                id="loan-payment-plan">
+                <Dropdown.Item eventKey="Standard" href="#">
+                  Standard plan
+                </Dropdown.Item>
+                <Dropdown.Item eventKey="Income" href="#">
+                  Income based plan
+                </Dropdown.Item>
+              </DropdownButton>
             </InputGroup>
           </Form.Group>
         </Col>
