@@ -1,24 +1,16 @@
 import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
-import React, {useCallback, useState} from 'react'
+import React from 'react'
 import Row from 'react-bootstrap/Row'
+import {currency} from '../shared/helpers'
 import {getDiscretionaryIncome, States} from '../shared/calc'
-import {currency, onChangeNumber} from '../shared/helpers'
+import {useOnChange, asInt} from '@standardlabs/react-hooks'
 
 const DiscretionaryIncome = props => {
-  const [income, setIncome] = useState('')
-  const onChangeIncome = useCallback(onChangeNumber(setIncome), [setIncome])
-
-  const [dependents, setDependents] = useState(1)
-  const onChangeDependants = useCallback(onChangeNumber(setDependents), [
-    setDependents
-  ])
-
-  const [state, setState] = useState(States.LOWER_48)
-  const onChangeState = useCallback(({target: {value}}) => setState(value), [
-    setState
-  ])
+  const [income, onChangeIncome] = useOnChange(50000, asInt)
+  const [dependents, onChangeDependants] = useOnChange(1, asInt)
+  const [state, onChangeState] = useOnChange(States.LOWER_48)
 
   const total = income && getDiscretionaryIncome(income, dependents, state)
 

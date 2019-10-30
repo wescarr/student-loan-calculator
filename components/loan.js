@@ -2,27 +2,28 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useEffect} from 'react'
 import {LoanTypes} from '../shared/loan_config'
-import {onChangeNumber} from '../shared/helpers'
+import {
+  asFloat,
+  asInt,
+  useDeferredOnChange,
+  useOnChange
+} from '@standardlabs/react-hooks'
 
-const Loan = props => {
-  const [balance, setBalance] = useState(60000)
-  const [rate, setRate] = useState(5)
-  const [type, setType] = useState('DIRECT_SUBSIDIZED')
+const Loan = ({onChange, ...props}) => {
+  const [balance, onBalanceChange] = useDeferredOnChange(60000, 150, asInt)
+  const [rate, onRateChange] = useDeferredOnChange(5, 150, asFloat)
+  const [type, onTypeChange] = useOnChange('DIRECT_SUBSIDIZED')
 
   useEffect(() => {
-    if (balance && rate && type) {
-      props.onChange({balance, rate: rate / 100, type})
+    if (balance.deferred && rate.deferred && type) {
+      onChange({balance: balance.deferred, rate: rate.deferred / 100, type})
     }
-  }, [balance, rate, type])
-
-  const onBalanceChange = useCallback(onChangeNumber(setBalance), [setBalance])
-  const onRateChange = useCallback(onChangeNumber(setRate), [setRate])
-  const onTypeChange = e => setType(e.target.value)
+  }, [onChange, balance.deferred, rate.deferred, type])
 
   return (
-    <div>
+    <div {...props}>
       <Form>
         <Form.Group>
           <Form.Label>What kind of loan do you have?</Form.Label>
@@ -51,7 +52,7 @@ const Loan = props => {
               </InputGroup.Prepend>
               <Form.Control
                 placeholder="40,000"
-                value={balance}
+                value={balance.value}
                 type="number"
                 onChange={onBalanceChange}
                 min={1000}
@@ -68,7 +69,7 @@ const Loan = props => {
                 type="number"
                 placeholder="5"
                 onChange={onRateChange}
-                value={rate}
+                value={rate.value}
                 min={1}
                 max={10}
                 step={0.1}
