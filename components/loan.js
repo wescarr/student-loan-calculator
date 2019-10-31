@@ -26,7 +26,7 @@ const Loan = ({onChange, ...props}) => {
         balance: balance.deferred,
         rate: rate.deferred / 100,
         type,
-        payments: payments.deferred,
+        payments: payments.deferred || 0,
         plan
       })
     }
