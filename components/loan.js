@@ -85,7 +85,7 @@ const Loan = ({onChange, ...props}) => {
         </Col>
         <Col xs={12} md={6}>
           <Form.Group>
-            <Form.Label>Have you made any payments?</Form.Label>
+            <Form.Label>Number of payments made</Form.Label>
             <InputGroup>
               <Form.Control
                 value={payments.value}
