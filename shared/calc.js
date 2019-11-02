@@ -99,6 +99,7 @@ export const getFixedBreakdown = (payment, balance, interestRate, term) => {
 }
 
 export const getGraduatedPayment = (balance, interestRate, term) => {
+  term = Math.ceil(term)
   // Min payment must be half of standard fixed payment
   let P = getFixedPayment(balance, interestRate, term) / 2
 
@@ -115,7 +116,11 @@ export const getGraduatedPayment = (balance, interestRate, term) => {
     term,
     growthRate
   )
-  while (breakdown[breakdown.length - 1].endingBalance > 0) {
+
+  while (
+    breakdown.length &&
+    breakdown[breakdown.length - 1].endingBalance > 0
+  ) {
     P++
     breakdown = getGraduatedBreakdown(
       P,

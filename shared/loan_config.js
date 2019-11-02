@@ -30,7 +30,7 @@ export const RepaymentPlans = {
     label: 'Standard Fixed',
     color: '#06FF54',
     eligible: true,
-    ...fixedRateRepayment(loan)
+    ...fixedRateRepayment(loan, (10 * 12 - loan.payments) / 12)
   }),
   FIXED_EXTENDED: loan => ({
     label: 'Fixed Extended',
@@ -47,7 +47,7 @@ export const RepaymentPlans = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'FFEL_CONSOLIDATED'
     ].includes(loan.type),
-    ...fixedRateRepayment(loan, 25)
+    ...fixedRateRepayment(loan, (25 * 12 - loan.payments) / 12)
   }),
   GRADUATED: loan => ({
     label: 'Graduated',
@@ -65,7 +65,7 @@ export const RepaymentPlans = {
       'FFEL_PRO',
       'FFEL_PARENTS'
     ].includes(loan.type),
-    ...graduatedRepayment(loan)
+    ...graduatedRepayment(loan, (10 * 12 - loan.payments) / 12)
   }),
   GRADUATED_EXTENDED: loan => ({
     label: 'Graduated Extended',
@@ -82,6 +82,6 @@ export const RepaymentPlans = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'FFEL_CONSOLIDATED'
     ].includes(loan.type),
-    ...graduatedRepayment(loan, 25)
+    ...graduatedRepayment(loan, (25 * 12 - loan.payments) / 12)
   })
 }

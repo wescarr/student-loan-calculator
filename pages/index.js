@@ -37,12 +37,24 @@ const dataset = (label, data, bgColor) => ({
 })
 
 const getChartData = (repayments, attr) => {
-  return {
-    labels: repayments[0].breakdown.slice(0, 25).map((r, i) => `${i + 1}`),
-    datasets: repayments
-      .filter(r => r.eligible)
-      .map(r => dataset(r.label, getYearBreakdown(r.breakdown, attr), r.color))
+  const datasets = repayments
+    .filter(r => r.eligible)
+    .map(r => dataset(r.label, getYearBreakdown(r.breakdown, attr), r.color))
+
+  // Find largest data set to construct labels
+  let max = 0
+  datasets.forEach(d => {
+    if (d.data.length > max) {
+      max = d.data.length
+    }
+  })
+
+  const data = {
+    datasets,
+    labels: new Array(max).fill(0).map((r, i) => `${i + 1}`)
   }
+
+  return data
 }
 
 const PaymentSummary = props => {
@@ -117,7 +129,7 @@ const Home = () => {
       Plans.GRADUATED(loan),
       Plans.FIXED_EXTENDED(loan),
       Plans.GRADUATED_EXTENDED(loan)
-    ]
+    ].filter(r => r.breakdown.length)
 
     chartOptions = {
       legend: {display: false},
@@ -127,7 +139,7 @@ const Home = () => {
             ticks: {
               beginAtZero: true,
               min: 0,
-              suggestedMax: 200 // Calculate this
+              suggestedMax: 200 // TODO(wes): Calculate this
             }
           }
         ]
