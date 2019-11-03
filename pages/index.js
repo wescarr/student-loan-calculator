@@ -1,14 +1,14 @@
-import Alert from 'react-bootstrap/Alert'
 import Badge from 'react-bootstrap/Badge'
+import Caret from '../components/caret'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
-import Form from 'react-bootstrap/Form'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
 import Loan from '../components/loan'
 import PropTypes from 'prop-types'
-import React, {useState} from 'react'
+import React, {useCallback, useState} from 'react'
 import Row from 'react-bootstrap/Row'
+import Table from 'react-bootstrap/Table'
 import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import dynamic from 'next/dynamic'
@@ -76,48 +76,35 @@ const PaymentSummary = props => {
   const last = breakdown[breakdown.length - 1]
 
   return (
-    <Alert
-      variant="secondary"
-      className={`text-center position-relative ${
-        !eligible ? 'text-muted' : ''
-      }`}
-      {...rest}>
-      <div className="position-absolute border border-white rounded-circle d-inline-block" />
-      <span>
-        {label} ({Math.round(breakdown.length / 12)} years)
-      </span>
+    <tr className={`${!eligible ? 'text-muted' : ''}`} {...rest}>
+      <td>
+        <div className="border border-white rounded-circle d-inline-block" />
+      </td>
+      <td>{label}</td>
       {eligible ? (
-        <div className="d-flex flex-row mt-2">
-          <div className="w-50 border-right border-white">
-            {first.payment === last.payment ? (
-              <h5 className="mb-0">{currency(first.payment)}</h5>
-            ) : (
-              <h5 className="mb-0">
-                {currency(first.payment)} - {currency(last.payment)}
-              </h5>
-            )}
-            Per month
-          </div>
-          <div className="w-50">
-            <h5 className="mb-0">{currency(last.totalInterest)}</h5> Total
-            interest
-          </div>
-        </div>
+        <>
+          <td>{Math.round(breakdown.length / 12)} years</td>
+          <td className="h6">
+            {first.payment === last.payment
+              ? `${currency(first.payment)}`
+              : `${currency(first.payment)} - ${currency(last.payment)}`}
+          </td>
+          <td className="text-right h6">{currency(last.totalInterest)}</td>
+          <td className="text-right h6">{currency(last.totalPayment)}</td>
+        </>
       ) : (
-        <p className="my-1">
+        <td colSpan="4">
           Your loan type is not elgible for this repayment plan
-        </p>
+        </td>
       )}
       <style jsx>{`
         div.rounded-circle {
           background-color: ${eligible ? color : '#d6d8db'};
           width: 15px;
           height: 15px;
-          top: 10px;
-          left: 10px;
         }
       `}</style>
-    </Alert>
+    </tr>
   )
 }
 
@@ -128,12 +115,80 @@ PaymentSummary.propTypes = {
   eligible: PropTypes.bool.isRequired
 }
 
+const sortRepayments = (list, sort) => {
+  const {key, dir} = sort
+  if (!key) {
+    return list
+  }
+
+  return list.slice().sort((a, b) => {
+    let aVal, bVal
+    switch (key) {
+      case 'term':
+        aVal = a.breakdown.length
+        bVal = b.breakdown.length
+        break
+      case 'payment':
+        aVal = a.breakdown[0][key]
+        bVal = b.breakdown[0][key]
+        break
+      case 'totalInterest':
+      case 'totalPayment':
+        aVal = a.breakdown[a.breakdown.length - 1][key]
+        bVal = b.breakdown[b.breakdown.length - 1][key]
+        break
+    }
+
+    if (!a.eligible) {
+      aVal = dir === 'down' ? Number.POSITIVE_INFINITY : 0
+    }
+
+    if (!b.eligible) {
+      bVal = dir === 'down' ? Number.POSITIVE_INFINITY : 0
+    }
+
+    return dir === 'down' ? aVal - bVal : bVal - aVal
+  })
+}
+
+const TableHeading = props => {
+  const {id, label, sort, onClick, ...rest} = props
+  return (
+    <th onClick={() => onClick(id)} {...rest}>
+      <span>{label}</span>
+      {sort.key === id ? <Caret dir={sort.dir} /> : null}
+      <style jsx>{`
+        span {
+          cursor: pointer;
+        }
+      `}</style>
+    </th>
+  )
+}
+
+TableHeading.propTypes = {
+  id: PropTypes.string,
+  label: PropTypes.string,
+  sort: PropTypes.object,
+  onClick: PropTypes.func
+}
+
 const Home = () => {
   const [loan, setLoan] = useState()
   const [income, setIncome] = useState() // eslint-disable-line no-unused-vars
   const [editIncome, onToggleEditIncome] = useToggle(false)
   const [chartType, setChartType] = useState('endingBalance')
   const [selectedPayment, setSelectedPayment] = useState()
+  const [sort, setSort] = useState({key: 'totalInterest', dir: 'up'})
+
+  const onSortClick = useCallback(
+    key =>
+      setSort({
+        key,
+        dir: key === sort.key && sort.dir === 'up' ? 'down' : 'up'
+      }),
+    [sort]
+  )
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
 
@@ -217,17 +272,50 @@ const Home = () => {
             </div>
             {loan && !isUnkownLoan && (
               <>
-                <Form.Row>
-                  {repayments.map(r => (
-                    <Col key={r.label} xs={12} sm={6}>
+                <Table borderless striped>
+                  <thead>
+                    <tr>
+                      <th />
+                      <th>Repayment plan</th>
+                      <TableHeading
+                        label="Term"
+                        onClick={onSortClick}
+                        id="term"
+                        sort={sort}
+                      />
+                      <TableHeading
+                        label="Per month"
+                        onClick={onSortClick}
+                        id="payment"
+                        sort={sort}
+                      />
+                      <TableHeading
+                        className="text-right"
+                        label="Total interest"
+                        onClick={onSortClick}
+                        id="totalInterest"
+                        sort={sort}
+                      />
+                      <TableHeading
+                        className="text-right"
+                        label="Total paid"
+                        onClick={onSortClick}
+                        id="totalPayment"
+                        sort={sort}
+                      />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortRepayments(repayments, sort).map(r => (
                       <PaymentSummary
                         {...r}
+                        key={r.label}
                         onMouseEnter={() => setSelectedPayment(r.label)}
                         onMouseLeave={() => setSelectedPayment()}
                       />
-                    </Col>
-                  ))}
-                </Form.Row>
+                    ))}
+                  </tbody>
+                </Table>
                 {chartData && (
                   <>
                     <div className="my-2 text-center">
