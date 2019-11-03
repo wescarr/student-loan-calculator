@@ -202,7 +202,7 @@ const Home = () => {
               </div>
               <div
                 className="bg-light px-3 py-2 rounded-bottom"
-                onClick={onToggleEditIncome}>
+                onClick={!editIncome ? onToggleEditIncome : null}>
                 {editIncome ? (
                   <IncomeForm onChange={setIncome} />
                 ) : (
