@@ -87,7 +87,7 @@ export const incomeBasedRepayment = (
     balance,
     rate,
     term,
-    0.05,
+    0.03,
     maxPayment
   )
 
