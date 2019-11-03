@@ -8,10 +8,10 @@ import {
 export const LoanTypes = {
   DIRECT_SUBSIDIZED: 'Direct Subsidized Loan',
   DIRECT_UNSUBSIDIZED: 'Direct Unsubsidized Loan',
-  STAFFORD_SUBSIDIZED: 'Subsidized Federal Stafford Loan',
-  STAFFORD_UNSUBSIDIZED: 'Unsubsidized Federal Stafford Loan',
   DIRECT_CONSOLIDATED_SUBSIDIZED: 'Direct Subsidized Consolidation Loan',
   DIRECT_CONSOLIDATED_UNSUBSIDIZED: 'Direct Unsubsidized Consolidation Loan',
+  STAFFORD_SUBSIDIZED: 'FFEL Subsidized Federal Stafford Loan',
+  STAFFORD_UNSUBSIDIZED: 'FFEL Unsubsidized Federal Stafford Loan',
   FFEL_CONSOLIDATED: 'FFEL Consolidation Loan',
   FFEL_PRO: 'FFEL PLUS Loan for Graduate/Professional Students',
   FFEL_PARENTS: 'FFEL PLUS Loan for Parents',
