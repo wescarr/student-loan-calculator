@@ -190,7 +190,7 @@ const Home = () => {
       <Container>
         <Row className="justify-content-center">
           <Col md={8}>
-            <div className="text-center mt-5 mb-4">
+            <div className="text-center mt-3 mb-4">
               <h1 className="display-4">Student Loan Calculator</h1>
               <p className="lead">
                 Find the best options for repaying your student loans
