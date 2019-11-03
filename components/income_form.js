@@ -9,20 +9,20 @@ import {TaxFilingStatus} from '../shared/loan_config'
 import {
   asInt,
   useDeferredOnChange,
-  useOnChange,
+  useOnChange
 } from '@standardlabs/react-hooks'
 
 const IncomeForm = ({onChange, ...props}) => {
-  const [income, onChangeIncome] = useDeferredOnChange(45000, 150, asInt)
+  const [agi, onChangeAgi] = useDeferredOnChange(50000, 150, asInt)
   const [dependents, onChangeDependants] = useOnChange(1, asInt)
   const [state, onChangeState] = useOnChange(States.LOWER_48)
   const [filing, onChangeFiling] = useOnChange(TaxFilingStatus.SINGLE)
 
   useEffect(() => {
-    if (income.deferred && dependents && state && filing) {
-      onChange({income: income.deferred, dependents, state, filing})
+    if (agi.deferred && dependents && state && filing) {
+      onChange({agi: agi.deferred, dependents, state, filing})
     }
-  }, [onChange, income.deferred, dependents, state, filing])
+  }, [onChange, agi.deferred, dependents, state, filing])
 
   return (
     <Form {...props}>
@@ -36,9 +36,11 @@ const IncomeForm = ({onChange, ...props}) => {
               </InputGroup.Prepend>
               <Form.Control
                 placeholder="50000"
-                value={income.value}
+                value={agi.value}
                 type="number"
-                onChange={onChangeIncome}
+                min={1000}
+                step={5000}
+                onChange={onChangeAgi}
               />
             </InputGroup>
           </Form.Group>
