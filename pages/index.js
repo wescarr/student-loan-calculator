@@ -13,7 +13,7 @@ import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import dynamic from 'next/dynamic'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
-import {currency} from '../shared/helpers'
+import {currency, hexToRgbA} from '../shared/helpers'
 import {useToggle} from '@standardlabs/react-hooks'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
@@ -27,19 +27,32 @@ const getYearBreakdown = (breakdown, attr) => {
   return years
 }
 
-const dataset = (label, data, bgColor) => ({
+const dataset = (label, data, bgColor, selected, anySelected) => ({
   label,
   data,
-  fill: false,
+  fill: 'origin',
   lineTension: 0.1,
-  backgroundColor: bgColor,
-  borderWidth: 0
+  borderColor: bgColor,
+  backgroundColor: hexToRgbA(bgColor, selected ? 1 : anySelected ? 0.2 : 0.6),
+  hoverBackgroundColor: hexToRgbA(bgColor, 1),
+  borderWidth: 0,
+  pointRadius: 0,
+  pointHitRadius: 5,
+  pointBackgroundColor: bgColor
 })
 
-const getChartData = (repayments, attr) => {
+const getChartData = (repayments, attr, selected) => {
   const datasets = repayments
     .filter(r => r.eligible)
-    .map(r => dataset(r.label, getYearBreakdown(r.breakdown, attr), r.color))
+    .map(r =>
+      dataset(
+        r.label,
+        getYearBreakdown(r.breakdown, attr),
+        r.color,
+        r.label === selected,
+        selected
+      )
+    )
 
   // Find largest data set to construct labels
   let max = 0
@@ -58,7 +71,7 @@ const getChartData = (repayments, attr) => {
 }
 
 const PaymentSummary = props => {
-  const {color, label, eligible, breakdown} = props
+  const {color, label, eligible, breakdown, ...rest} = props
   const [first] = breakdown
   const last = breakdown[breakdown.length - 1]
 
@@ -67,7 +80,8 @@ const PaymentSummary = props => {
       variant="secondary"
       className={`text-center position-relative ${
         !eligible ? 'text-muted' : ''
-      }`}>
+      }`}
+      {...rest}>
       <div className="position-absolute border border-white rounded-circle d-inline-block" />
       <span>
         {label} ({Math.round(breakdown.length / 12)} years)
@@ -119,6 +133,7 @@ const Home = () => {
   const [income, setIncome] = useState() // eslint-disable-line no-unused-vars
   const [editIncome, onToggleEditIncome] = useToggle(false)
   const [chartType, setChartType] = useState('endingBalance')
+  const [selectedPayment, setSelectedPayment] = useState()
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
 
@@ -128,7 +143,14 @@ const Home = () => {
       Plans.STANDARD_FIXED(loan),
       Plans.GRADUATED(loan),
       Plans.FIXED_EXTENDED(loan),
-      Plans.GRADUATED_EXTENDED(loan)
+      Plans.GRADUATED_EXTENDED(loan),
+      ...(income
+        ? [
+            Plans.INCOME_BASED_REPAY(loan, income),
+            Plans.INCOME_BASED_REPAY_NEW(loan, income),
+            Plans.PAY_AS_YOU_EARN(loan, income)
+          ]
+        : [])
     ].filter(r => r.breakdown.length)
 
     chartOptions = {
@@ -156,7 +178,7 @@ const Home = () => {
       }
     }
 
-    chartData = getChartData(repayments, chartType)
+    chartData = getChartData(repayments, chartType, selectedPayment)
   }
 
   return (
@@ -178,15 +200,14 @@ const Home = () => {
               <div className="px-3 pt-3 pb-1">
                 <Loan onChange={setLoan} />
               </div>
-              <div className="bg-light px-3 py-2 rounded-bottom">
+              <div
+                className="bg-light px-3 py-2 rounded-bottom"
+                onClick={onToggleEditIncome}>
                 {editIncome ? (
                   <IncomeForm onChange={setIncome} />
                 ) : (
-                  <small className="text-muted" onClick={onToggleEditIncome}>
-                    <Badge
-                      variant="secondary"
-                      className="rounded-circle p-0"
-                      onClick={onToggleEditIncome}>
+                  <small className="text-muted">
+                    <Badge variant="secondary" className="rounded-circle p-0">
                       <span className="plus">+</span>
                     </Badge>{' '}
                     Enter your income to see additional options
@@ -199,7 +220,11 @@ const Home = () => {
                 <Form.Row>
                   {repayments.map(r => (
                     <Col key={r.label} xs={12} sm={6}>
-                      <PaymentSummary {...r} />
+                      <PaymentSummary
+                        {...r}
+                        onMouseEnter={() => setSelectedPayment(r.label)}
+                        onMouseLeave={() => setSelectedPayment()}
+                      />
                     </Col>
                   ))}
                 </Form.Row>
@@ -249,7 +274,7 @@ const Home = () => {
         </Row>
       </Container>
       <style jsx>{`
-        small.text-muted {
+        .bg-light.rounded-bottom {
           cursor: pointer;
         }
 

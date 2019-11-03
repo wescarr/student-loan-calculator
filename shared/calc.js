@@ -12,6 +12,8 @@ const FEDERAL_POVERY_LEVEL = {
   HAWAII: [5080, 14380, 19460, 24540, 29620, 34700, 39780, 44860, 49940]
 }
 
+const MONTHS = 12
+
 export const getDiscretionaryIncome = (agi, dependents = 1, state) => {
   const fpl = FEDERAL_POVERY_LEVEL[state]
 
@@ -25,8 +27,23 @@ export const getDiscretionaryIncome = (agi, dependents = 1, state) => {
   return Math.max(0, agi - level * 1.5)
 }
 
+export const partialFinancialHardship = (loan, income, rate = 0.15) => {
+  const {payment} = fixedRateRepayment(loan, 10)
+  const discrectionary = getDiscretionaryIncome(
+    income.agi,
+    income.dependents,
+    income.state
+  )
+
+  return payment > (discrectionary / MONTHS) * rate
+}
+
+export const proRatedTerm = (loan, term) =>
+  (term * MONTHS - loan.payments) / MONTHS
+
 // TODO(wes): Inforce minimum payments
 export const fixedRateRepayment = (loan, term = 10) => {
+  term = proRatedTerm(loan, term)
   const {balance, rate} = loan
   const payment = getFixedPayment(balance, rate, term)
   const breakdown = getFixedBreakdown(payment, balance, rate, term)
@@ -35,6 +52,7 @@ export const fixedRateRepayment = (loan, term = 10) => {
 }
 
 export const graduatedRepayment = (loan, term = 10) => {
+  term = proRatedTerm(loan, term)
   const {balance, rate} = loan
   const {payment, growthRate} = getGraduatedPayment(balance, rate, term)
   const breakdown = getGraduatedBreakdown(
@@ -48,17 +66,95 @@ export const graduatedRepayment = (loan, term = 10) => {
   return {payment, breakdown}
 }
 
+export const incomeBasedRepayment = (
+  loan,
+  income,
+  term = 25,
+  disRate = 0.15
+) => {
+  term = proRatedTerm(loan, term)
+  const {balance, rate} = loan
+  const discrectionary = getDiscretionaryIncome(
+    income.agi,
+    income.dependents,
+    income.state
+  )
+
+  const payment = (discrectionary / MONTHS) * disRate
+  const maxPayment = getFixedPayment(balance, rate, 10)
+  const breakdown = getIncomeBreakdown(
+    payment,
+    balance,
+    rate,
+    term,
+    0.05,
+    maxPayment
+  )
+
+  return {payment, breakdown}
+}
+
+export const getIncomeBreakdown = (
+  initialPayment,
+  balance,
+  interestRate,
+  term,
+  growthRate,
+  maxPayment
+) => {
+  const breakdown = []
+  for (let i = 0; i < term * MONTHS; i++) {
+    let last = breakdown[i - 1]
+    if (!last) {
+      last = {
+        balance,
+        payment: initialPayment,
+        endingBalance: balance,
+        totalInterest: 0,
+        totalPayment: 0
+      }
+    }
+
+    let payment = last.payment
+    // Increase payment every year.
+    if (i > 0 && i % MONTHS === 0) {
+      payment = Math.min(payment * (1 + growthRate), maxPayment)
+    }
+    const interest = (last.endingBalance * interestRate) / MONTHS
+    const principle = payment - interest
+    const endingBalance = last.endingBalance - principle
+    const totalInterest = interest + last.totalInterest
+    const totalPayment = last.totalPayment + payment
+
+    breakdown.push({
+      balance: last.endingBalance,
+      payment,
+      interest,
+      principle,
+      endingBalance,
+      totalInterest,
+      totalPayment
+    })
+
+    if (endingBalance <= 0) {
+      break
+    }
+  }
+
+  return breakdown
+}
+
 // Calculates periodic payment amount for a loan with a constant interest rate
 // and term in years. rateFactor is the number of interest periods per year.
 export const getFixedPayment = (
   balance,
   interestRate,
   term = 10,
-  rateFactor = 12
+  rateFactor = MONTHS
 ) => {
   const Pv = balance
   const R = interestRate / rateFactor
-  const n = term * 12
+  const n = term * MONTHS
   const P = (Pv * R) / (1 - Math.pow(1 + R, -n))
 
   return P
@@ -66,7 +162,7 @@ export const getFixedPayment = (
 
 export const getFixedBreakdown = (payment, balance, interestRate, term) => {
   const breakdown = []
-  for (let i = 0; i < term * 12; i++) {
+  for (let i = 0; i < term * MONTHS; i++) {
     let last = breakdown[i - 1]
     if (!last) {
       last = {
@@ -78,7 +174,7 @@ export const getFixedBreakdown = (payment, balance, interestRate, term) => {
       }
     }
 
-    const interest = (last.endingBalance * interestRate) / 12
+    const interest = (last.endingBalance * interestRate) / MONTHS
     const principle = payment - interest
     const endingBalance = last.endingBalance - principle
     const totalInterest = interest + last.totalInterest
@@ -104,7 +200,7 @@ export const getGraduatedPayment = (balance, interestRate, term) => {
   let P = getFixedPayment(balance, interestRate, term) / 2
 
   // First payment must be only interest if possible
-  P = Math.max(P, (balance * interestRate) / 12)
+  P = Math.max(P, (balance * interestRate) / MONTHS)
   // Last payment can't be 3x initial payment
   let growthRate = Math.pow(3, 1 / (term / 2 - 1)) - 1
 
@@ -134,7 +230,7 @@ export const getGraduatedPayment = (balance, interestRate, term) => {
   // If breakdown is less than full term, decrease final payment until breakdown
   // is over the entire term
   let lastP = P * Math.pow(1 + growthRate, term / 2 - 1)
-  while (lastP > P + 1 && breakdown.length < term * 12) {
+  while (lastP > P + 1 && breakdown.length < term * MONTHS) {
     lastP--
     growthRate = Math.pow(lastP / P, 1 / (term / 2 - 1)) - 1
 
@@ -158,7 +254,7 @@ export const getGraduatedBreakdown = (
   growthRate = 0.05
 ) => {
   const breakdown = []
-  for (let i = 0; i < term * 12; i++) {
+  for (let i = 0; i < term * MONTHS; i++) {
     let last = breakdown[i - 1]
     if (!last) {
       last = {
@@ -175,7 +271,7 @@ export const getGraduatedBreakdown = (
     if (i > 0 && i % 24 === 0) {
       payment = payment * (1 + growthRate)
     }
-    const interest = (last.endingBalance * interestRate) / 12
+    const interest = (last.endingBalance * interestRate) / MONTHS
     const principle = payment - interest
     const endingBalance = last.endingBalance - principle
     const totalInterest = interest + last.totalInterest

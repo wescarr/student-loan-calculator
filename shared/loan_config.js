@@ -1,4 +1,9 @@
-import {fixedRateRepayment, graduatedRepayment} from './calc'
+import {
+  fixedRateRepayment,
+  graduatedRepayment,
+  incomeBasedRepayment,
+  partialFinancialHardship
+} from './calc'
 
 export const LoanTypes = {
   DIRECT_SUBSIDIZED: 'Direct Subsidized Loan',
@@ -24,17 +29,28 @@ export const TaxFilingStatus = {
   HEAD_OF_HOUSEHOLD: 'Head of household'
 }
 
-// Colors: https://www.colorbox.io/#steps=10#hue_start=359#hue_end=0#hue_curve=easeInOutQuad#sat_start=43#sat_end=78#sat_curve=easeOutQuad#sat_rate=136#lum_start=100#lum_end=100#lum_curve=easeOutQuad#minor_steps_map=none
+// Colors: https://www.colorbox.io/#steps=7#hue_start=184#hue_end=359#hue_curve=linear#sat_start=52#sat_end=90#sat_curve=linear#sat_rate=130#lum_start=100#lum_end=100#lum_curve=easeOutQuad#minor_steps_map=0
+const Colors = [
+  '#3E94FF',
+  '#3129FF',
+  '#8F14FF',
+  '#FF00FC',
+  '#FF0080',
+  '#FF0004',
+  '#53F4FF',
+  '#48C6FF'
+]
+
 export const RepaymentPlans = {
   STANDARD_FIXED: loan => ({
     label: 'Standard Fixed',
-    color: '#06FF54',
+    color: Colors[0],
     eligible: true,
-    ...fixedRateRepayment(loan, (10 * 12 - loan.payments) / 12)
+    ...fixedRateRepayment(loan)
   }),
   FIXED_EXTENDED: loan => ({
     label: 'Fixed Extended',
-    color: '#1388FF',
+    color: Colors[1],
     eligible: [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -47,11 +63,11 @@ export const RepaymentPlans = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'FFEL_CONSOLIDATED'
     ].includes(loan.type),
-    ...fixedRateRepayment(loan, (25 * 12 - loan.payments) / 12)
+    ...fixedRateRepayment(loan, 25)
   }),
   GRADUATED: loan => ({
     label: 'Graduated',
-    color: '#FF2A00',
+    color: Colors[3],
     eligible: [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -65,11 +81,11 @@ export const RepaymentPlans = {
       'FFEL_PRO',
       'FFEL_PARENTS'
     ].includes(loan.type),
-    ...graduatedRepayment(loan, (10 * 12 - loan.payments) / 12)
+    ...graduatedRepayment(loan)
   }),
   GRADUATED_EXTENDED: loan => ({
     label: 'Graduated Extended',
-    color: '#FF9400',
+    color: Colors[4],
     eligible: [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -82,6 +98,66 @@ export const RepaymentPlans = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'FFEL_CONSOLIDATED'
     ].includes(loan.type),
-    ...graduatedRepayment(loan, (25 * 12 - loan.payments) / 12)
-  })
+    ...graduatedRepayment(loan, 25)
+  }),
+  INCOME_BASED_REPAY: (loan, income) => {
+    const eligible = partialFinancialHardship(loan, income, 0.15)
+    return {
+      label: 'Income Based Repay - IBR',
+      color: Colors[5],
+      eligible:
+        eligible &&
+        [
+          'DIRECT_SUBSIDIZED',
+          'DIRECT_UNSUBSIDIZED',
+          'STAFFORD_SUBSIDIZED',
+          'STAFFORD_UNSUBSIDIZED',
+          'FFEL_PRO',
+          'FFEL_CONSOLIDATED',
+          'DIRECT_PLUS_PRO',
+          'DIRECT_PLUS_CONSOLIDATED'
+        ].includes(loan.type),
+      ...incomeBasedRepayment(loan, income)
+    }
+  },
+  INCOME_BASED_REPAY_NEW: (loan, income) => {
+    const eligible = partialFinancialHardship(loan, income, 0.1)
+    return {
+      label: 'New IBR',
+      color: Colors[6],
+      eligible:
+        eligible &&
+        [
+          'DIRECT_SUBSIDIZED',
+          'DIRECT_UNSUBSIDIZED',
+          'STAFFORD_SUBSIDIZED',
+          'STAFFORD_UNSUBSIDIZED',
+          'FFEL_PRO',
+          'FFEL_CONSOLIDATED',
+          'DIRECT_PLUS_PRO',
+          'DIRECT_PLUS_CONSOLIDATED'
+        ].includes(loan.type),
+      ...incomeBasedRepayment(loan, income, 20, 0.1)
+    }
+  },
+  PAY_AS_YOU_EARN: (loan, income) => {
+    const eligible = partialFinancialHardship(loan, income, 0.1)
+    return {
+      label: 'Pay As Your Earn',
+      color: Colors[7],
+      eligible:
+        eligible &&
+        [
+          'DIRECT_SUBSIDIZED',
+          'DIRECT_UNSUBSIDIZED',
+          'STAFFORD_SUBSIDIZED',
+          'STAFFORD_UNSUBSIDIZED',
+          'FFEL_PRO',
+          'FFEL_CONSOLIDATED',
+          'DIRECT_PLUS_PRO',
+          'DIRECT_PLUS_CONSOLIDATED'
+        ].includes(loan.type),
+      ...incomeBasedRepayment(loan, income, 20, 0.1)
+    }
+  }
 }
