@@ -71,7 +71,7 @@ const getChartData = (repayments, attr, selected) => {
 }
 
 const PaymentSummary = props => {
-  const {color, label, eligible, breakdown, ...rest} = props
+  const {color, label, eligible, breakdown, forgiven, income, ...rest} = props
   const [first] = breakdown
   const last = breakdown[breakdown.length - 1]
 
@@ -91,6 +91,9 @@ const PaymentSummary = props => {
           </td>
           <td className="text-right h6">{currency(last.totalInterest)}</td>
           <td className="text-right h6">{currency(last.totalPayment)}</td>
+          {income ? (
+            <td className="text-right h6">{currency(forgiven || 0)}</td>
+          ) : null}
         </>
       ) : (
         <td colSpan="4">
@@ -112,7 +115,9 @@ PaymentSummary.propTypes = {
   color: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   breakdown: PropTypes.array.isRequired,
-  eligible: PropTypes.bool.isRequired
+  eligible: PropTypes.bool.isRequired,
+  forgiven: PropTypes.number,
+  income: PropTypes.object
 }
 
 const sortRepayments = (list, sort) => {
@@ -137,6 +142,9 @@ const sortRepayments = (list, sort) => {
         aVal = a.breakdown[a.breakdown.length - 1][key]
         bVal = b.breakdown[b.breakdown.length - 1][key]
         break
+      case 'forgiven':
+        aVal = a[key] || 0
+        bVal = b[key] || 0
     }
 
     if (!a.eligible) {
@@ -270,6 +278,10 @@ const Home = () => {
                 )}
               </div>
             </div>
+          </Col>
+        </Row>
+        <Row className="justify-content-center">
+          <Col key="repayments" md={income ? 10 : 8} className="repayments">
             {loan && !isUnkownLoan && (
               <>
                 <Table borderless striped>
@@ -303,12 +315,22 @@ const Home = () => {
                         id="totalPayment"
                         sort={sort}
                       />
+                      {income ? (
+                        <TableHeading
+                          className="text-right"
+                          label="Forgiven"
+                          onClick={onSortClick}
+                          id="forgiven"
+                          sort={sort}
+                        />
+                      ) : null}
                     </tr>
                   </thead>
                   <tbody>
                     {sortRepayments(repayments, sort).map(r => (
                       <PaymentSummary
                         {...r}
+                        income={income}
                         key={r.label}
                         onMouseEnter={() => setSelectedPayment(r.label)}
                         onMouseLeave={() => setSelectedPayment()}
@@ -362,8 +384,13 @@ const Home = () => {
         </Row>
       </Container>
       <style jsx>{`
+        :global(.repayments) {
+          transition: all 0.25s ease-out;
+        }
+
         .bg-light.rounded-bottom {
           cursor: pointer;
+          transition: all 5s ease-out;
         }
 
         .plus {

@@ -12,7 +12,7 @@ const FEDERAL_POVERY_LEVEL = {
   HAWAII: [5080, 14380, 19460, 24540, 29620, 34700, 39780, 44860, 49940]
 }
 
-const MONTHS = 12
+export const MONTHS = 12
 
 export const getDiscretionaryIncome = (agi, dependents = 1, state) => {
   const fpl = FEDERAL_POVERY_LEVEL[state]
