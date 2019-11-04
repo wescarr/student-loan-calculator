@@ -390,7 +390,6 @@ const Home = () => {
 
         .bg-light.rounded-bottom {
           cursor: pointer;
-          transition: all 5s ease-out;
         }
 
         .plus {
