@@ -96,7 +96,7 @@ const PaymentSummary = props => {
           ) : null}
         </>
       ) : (
-        <td colSpan="4">
+        <td colSpan="5">
           Your loan type is not elgible for this repayment plan
         </td>
       )}
