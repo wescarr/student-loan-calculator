@@ -6,7 +6,7 @@ const Select = props => {
 
   return (
     <div className="form-control dropdown-toggle p-0 position-relative">
-      <select {...rest} className="form-control border-0">
+      <select {...rest} className="form-control border-0 pr-4">
         {children}
       </select>
       <style jsx>{`
