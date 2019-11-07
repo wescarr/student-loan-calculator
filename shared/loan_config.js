@@ -1,4 +1,5 @@
 import {
+  MONTHS,
   fixedRateRepayment,
   graduatedRepayment,
   incomeBasedRepayment,
@@ -8,10 +9,10 @@ import {
 export const LoanTypes = {
   DIRECT_SUBSIDIZED: 'Direct Subsidized Loan',
   DIRECT_UNSUBSIDIZED: 'Direct Unsubsidized Loan',
-  STAFFORD_SUBSIDIZED: 'Subsidized Federal Stafford Loan',
-  STAFFORD_UNSUBSIDIZED: 'Unsubsidized Federal Stafford Loan',
   DIRECT_CONSOLIDATED_SUBSIDIZED: 'Direct Subsidized Consolidation Loan',
   DIRECT_CONSOLIDATED_UNSUBSIDIZED: 'Direct Unsubsidized Consolidation Loan',
+  STAFFORD_SUBSIDIZED: 'FFEL Subsidized Federal Stafford Loan',
+  STAFFORD_UNSUBSIDIZED: 'FFEL Unsubsidized Federal Stafford Loan',
   FFEL_CONSOLIDATED: 'FFEL Consolidation Loan',
   FFEL_PRO: 'FFEL PLUS Loan for Graduate/Professional Students',
   FFEL_PARENTS: 'FFEL PLUS Loan for Parents',
@@ -102,6 +103,12 @@ export const RepaymentPlans = {
   }),
   INCOME_BASED_REPAY: (loan, income) => {
     const eligible = partialFinancialHardship(loan, income, 0.15)
+    const {payment, breakdown} = incomeBasedRepayment(loan, income)
+    const forgiven =
+      breakdown.length === 25 * MONTHS
+        ? breakdown[breakdown.length - 1].balance
+        : 0
+
     return {
       label: 'Income Based Repay - IBR',
       color: Colors[5],
@@ -117,11 +124,19 @@ export const RepaymentPlans = {
           'DIRECT_PLUS_PRO',
           'DIRECT_PLUS_CONSOLIDATED'
         ].includes(loan.type),
-      ...incomeBasedRepayment(loan, income)
+      forgiven,
+      payment,
+      breakdown
     }
   },
   INCOME_BASED_REPAY_NEW: (loan, income) => {
     const eligible = partialFinancialHardship(loan, income, 0.1)
+    const {payment, breakdown} = incomeBasedRepayment(loan, income, 20, 0.1)
+    const forgiven =
+      breakdown.length === 20 * MONTHS
+        ? breakdown[breakdown.length - 1].balance
+        : 0
+
     return {
       label: 'New IBR',
       color: Colors[6],
@@ -137,11 +152,19 @@ export const RepaymentPlans = {
           'DIRECT_PLUS_PRO',
           'DIRECT_PLUS_CONSOLIDATED'
         ].includes(loan.type),
-      ...incomeBasedRepayment(loan, income, 20, 0.1)
+      forgiven,
+      payment,
+      breakdown
     }
   },
   PAY_AS_YOU_EARN: (loan, income) => {
     const eligible = partialFinancialHardship(loan, income, 0.1)
+    const {payment, breakdown} = incomeBasedRepayment(loan, income, 20, 0.1)
+    const forgiven =
+      breakdown.length === 20 * MONTHS
+        ? breakdown[breakdown.length - 1].balance
+        : 0
+
     return {
       label: 'Pay As Your Earn',
       color: Colors[7],
@@ -157,7 +180,9 @@ export const RepaymentPlans = {
           'DIRECT_PLUS_PRO',
           'DIRECT_PLUS_CONSOLIDATED'
         ].includes(loan.type),
-      ...incomeBasedRepayment(loan, income, 20, 0.1)
+      forgiven,
+      payment,
+      breakdown
     }
   }
 }

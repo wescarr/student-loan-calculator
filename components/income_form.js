@@ -3,6 +3,7 @@ import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
 import React, {useEffect} from 'react'
+import Select from './select'
 import {States} from '../shared/calc'
 import {TaxFilingStatus} from '../shared/loan_config'
 
@@ -48,11 +49,11 @@ const IncomeForm = ({onChange, ...props}) => {
         <Col>
           <Form.Group>
             <Form.Label>State</Form.Label>
-            <Form.Control as="select" onChange={onChangeState} value={state}>
+            <Select onChange={onChangeState} value={state}>
               <option value={States.LOWER_48}>Lower 48</option>
               <option value={States.ALASKA}>Alaska</option>
               <option value={States.HAWAII}>Hawaii</option>
-            </Form.Control>
+            </Select>
           </Form.Group>
         </Col>
       </Form.Row>
@@ -60,28 +61,25 @@ const IncomeForm = ({onChange, ...props}) => {
         <Col>
           <Form.Group>
             <Form.Label>Family Size</Form.Label>
-            <Form.Control
-              as="select"
-              onChange={onChangeDependants}
-              value={dependents}>
+            <Select onChange={onChangeDependants} value={dependents}>
               {new Array(15).fill(1).map((value, index) => (
                 <option key={index} value={index + 1}>
                   {index + 1}
                 </option>
               ))}
-            </Form.Control>
+            </Select>
           </Form.Group>
         </Col>
         <Col>
           <Form.Group>
             <Form.Label>Tax Filing Status</Form.Label>
-            <Form.Control as="select" onChange={onChangeFiling} value={filing}>
+            <Select onChange={onChangeFiling} value={filing}>
               {Object.entries(TaxFilingStatus).map(([key, value]) => (
                 <option key={key} value={key}>
                   {value}
                 </option>
               ))}
-            </Form.Control>
+            </Select>
           </Form.Group>
         </Col>
       </Form.Row>
