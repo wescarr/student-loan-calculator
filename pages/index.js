@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {classNames, currency, hexToRgbA} from '../shared/helpers'
 import {useToggle} from '@standardlabs/react-hooks'
+import chartImg from '../images/chart-area.svg'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
@@ -81,7 +82,7 @@ const PaymentSummary = props => {
       className={classNames({'text-muted': !eligible, selected, eligible})}
       {...rest}>
       <td>
-        {selected && (
+        {eligible && (
           <div className="border border-white rounded-circle d-inline-block" />
         )}
       </td>
@@ -107,7 +108,7 @@ const PaymentSummary = props => {
       )}
       <style jsx>{`
         div.rounded-circle {
-          background-color: ${eligible ? color : '#d6d8db'};
+          background-color: ${selected ? color : '#d6d8db'};
           width: 15px;
           height: 15px;
         }
@@ -116,11 +117,7 @@ const PaymentSummary = props => {
           vertical-align: middle;
         }
 
-        tr.selected td {
-          background: #545b62;
-          color: #fff;
-        }
-
+        tr.eligible td:nth-child(1),
         tr.eligible td:nth-child(2) {
           cursor: pointer;
         }
@@ -328,7 +325,9 @@ const Home = () => {
                 <Table borderless striped>
                   <thead>
                     <tr>
-                      <th />
+                      <th>
+                        <img src={chartImg} />
+                      </th>
                       <th>Repayment plan</th>
                       <TableHeading
                         label="Term"
