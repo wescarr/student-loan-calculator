@@ -17,7 +17,7 @@ const IncomeForm = ({onChange, ...props}) => {
   const [agi, onChangeAgi] = useDeferredOnChange(50000, 150, asInt)
   const [dependents, onChangeDependants] = useOnChange(1, asInt)
   const [state, onChangeState] = useOnChange(States.LOWER_48)
-  const [filing, onChangeFiling] = useOnChange(TaxFilingStatus.SINGLE)
+  const [filing, onChangeFiling] = useOnChange('SINGLE')
 
   useEffect(() => {
     if (agi.deferred && dependents && state && filing) {

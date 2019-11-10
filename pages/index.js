@@ -34,7 +34,7 @@ const dataset = (label, data, bgColor) => ({
   fill: 'origin',
   lineTension: 0.1,
   borderColor: bgColor,
-  backgroundColor: hexToRgbA(bgColor, 0.6),
+  backgroundColor: hexToRgbA(bgColor, 0.8),
   hoverBackgroundColor: hexToRgbA(bgColor, 1),
   borderWidth: 0,
   pointRadius: 0,
@@ -241,7 +241,8 @@ const Home = () => {
               Plans.INCOME_BASED_REPAY(loan, income),
               Plans.INCOME_BASED_REPAY_NEW(loan, income),
               Plans.PAY_AS_YOU_EARN(loan, income),
-              Plans.REVISED_PAY_AS_YOU_EARN(loan, income)
+              Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
+              Plans.INCOME_CONTINGENT_REPAY(loan, income)
             ]
           : [])
       ].filter(r => r.breakdown.length),

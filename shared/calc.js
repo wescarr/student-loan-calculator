@@ -4,6 +4,8 @@ export const States = {
   HAWAII: 'HAWAII'
 }
 
+export const MONTHS = 12
+
 // 0 index is the amount for each dependent over 8 persons
 // Based on: https://aspe.hhs.gov/poverty-guidelines
 const FEDERAL_POVERY_LEVEL = {
@@ -12,7 +14,66 @@ const FEDERAL_POVERY_LEVEL = {
   HAWAII: [5080, 14380, 19460, 24540, 29620, 34700, 39780, 44860, 49940]
 }
 
-export const MONTHS = 12
+// https://www.federalregister.gov/documents/2018/08/02/2018-16582/annual-updates-to-the-income-contingent-repayment-icr-plan-formula-for-2018-william-d-ford-federal
+const INCOME_PERCENTAGE_FACTOR = {
+  single: [
+    {income: 11860, factor: 0.55},
+    {income: 16318, factor: 0.5779},
+    {income: 20997, factor: 0.6057},
+    {income: 25782, factor: 0.6623},
+    {income: 30352, factor: 0.7189},
+    {income: 36114, factor: 0.8033},
+    {income: 45361, factor: 0.8877},
+    {income: 56891, factor: 1.0},
+    {income: 68424, factor: 1.0},
+    {income: 82238, factor: 1.118},
+    {income: 105302, factor: 1.235},
+    {income: 149143, factor: 1.412},
+    {income: 171006, factor: 1.5},
+    {income: 304590, factor: 2.0}
+  ],
+  married: [
+    {income: 11860, factor: 0.5052},
+    {income: 18712, factor: 0.5668},
+    {income: 22299, factor: 0.5956},
+    {income: 29152, factor: 0.6779},
+    {income: 36114, factor: 0.7522},
+    {income: 45361, factor: 0.8761},
+    {income: 56890, factor: 1.0},
+    {income: 68424, factor: 1.0},
+    {income: 85724, factor: 1.094},
+    {income: 114547, factor: 1.25},
+    {income: 154905, factor: 1.406},
+    {income: 216641, factor: 1.5},
+    {income: 354009, factor: 2.0}
+  ]
+}
+
+export const getIncomePercentageFactor = (income, status = 'single') => {
+  const list = INCOME_PERCENTAGE_FACTOR[status]
+
+  let i
+  for (i = 0; i < list.length; i++) {
+    if (list[i].income >= income) {
+      if (list[i].income > income && i > 0) {
+        i--
+      }
+      break
+    }
+  }
+
+  const lower = list[i]
+  const upper = list[i + 1]
+
+  if (!upper || lower.income === income) {
+    return lower.factor
+  }
+
+  // Interoplate factor between lower and upper incomes
+  const percentage = (income - lower.income) / (upper.income - lower.income)
+
+  return lower.factor + (upper.factor - lower.factor) * percentage
+}
 
 export const getDiscretionaryIncome = (agi, dependents = 1, state) => {
   const fpl = FEDERAL_POVERY_LEVEL[state]
@@ -234,6 +295,93 @@ export const getPayeBreakdown = (
       subsidizedPayment = (interest - payment) / 2
     }
     const principle = payment + subsidizedPayment - interest
+    const endingBalance = last.endingBalance - principle
+    const totalInterest = interest + last.totalInterest
+    const totalPayment = last.totalPayment + payment
+
+    breakdown.push({
+      balance: last.endingBalance,
+      payment,
+      interest,
+      principle,
+      endingBalance,
+      totalInterest,
+      totalPayment
+    })
+
+    if (endingBalance <= 0) {
+      break
+    }
+  }
+
+  return breakdown
+}
+
+export const icrBasedRepayment = (loan, income, term = 25, disRate = 0.2) => {
+  term = proRatedTerm(loan, term)
+  const {balance, rate} = loan
+  const discrectionary = getDiscretionaryIncome(
+    income.agi,
+    income.dependents,
+    income.state
+  )
+
+  const incomeFactor = getIncomePercentageFactor(
+    income.agi,
+    income.filing === 'SINGLE' ? 'single' : 'married'
+  )
+
+  console.log(income.filing, incomeFactor)
+
+  const disPay = (discrectionary / MONTHS) * disRate
+  const fixedPay = getFixedPayment(balance, rate, 12) * incomeFactor
+
+  const payment = Math.min(disPay, fixedPay)
+  const maxPayment = Math.max(disPay, fixedPay)
+
+  const breakdown = getIcrBreakdown(
+    payment,
+    maxPayment,
+    balance,
+    rate,
+    term,
+    0.03 // Assumed yearly income increase
+  )
+
+  return {payment, breakdown}
+}
+
+export const getIcrBreakdown = (
+  initialPayment,
+  maxPayment,
+  balance,
+  interestRate,
+  term,
+  growthRate
+) => {
+  const breakdown = []
+  for (let i = 0; i < term * MONTHS; i++) {
+    let last = breakdown[i - 1]
+    if (!last) {
+      last = {
+        balance,
+        payment: initialPayment,
+        endingBalance: balance,
+        totalInterest: 0,
+        totalPayment: 0
+      }
+    }
+
+    let payment = last.payment
+    // Increase payment every year.
+    if (i > 0 && i % MONTHS === 0) {
+      payment = Math.min(payment * (1 + growthRate), maxPayment)
+    }
+    if (payment > 0 && payment < 5) {
+      payment = 5
+    }
+    const interest = (last.endingBalance * interestRate) / MONTHS
+    const principle = payment - interest
     const endingBalance = last.endingBalance - principle
     const totalInterest = interest + last.totalInterest
     const totalPayment = last.totalPayment + payment
