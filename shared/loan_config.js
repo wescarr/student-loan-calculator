@@ -3,7 +3,8 @@ import {
   fixedRateRepayment,
   graduatedRepayment,
   incomeBasedRepayment,
-  partialFinancialHardship
+  partialFinancialHardship,
+  payeBasedRepayment
 } from './calc'
 
 export const LoanTypes = {
@@ -39,7 +40,8 @@ const Colors = [
   '#FF0080',
   '#FF0004',
   '#53F4FF',
-  '#48C6FF'
+  '#48C6FF',
+  '#8F14FF'
 ]
 
 export const RepaymentPlans = {
@@ -105,7 +107,7 @@ export const RepaymentPlans = {
     const eligible = partialFinancialHardship(loan, income, 0.15)
     const {payment, breakdown} = incomeBasedRepayment(loan, income)
     const forgiven =
-      breakdown.length === 25 * MONTHS
+      breakdown.length + loan.payments === 25 * MONTHS
         ? breakdown[breakdown.length - 1].balance
         : 0
 
@@ -133,7 +135,7 @@ export const RepaymentPlans = {
     const eligible = partialFinancialHardship(loan, income, 0.1)
     const {payment, breakdown} = incomeBasedRepayment(loan, income, 20, 0.1)
     const forgiven =
-      breakdown.length === 20 * MONTHS
+      breakdown.length + loan.payments === 20 * MONTHS
         ? breakdown[breakdown.length - 1].balance
         : 0
 
@@ -159,15 +161,43 @@ export const RepaymentPlans = {
   },
   PAY_AS_YOU_EARN: (loan, income) => {
     const eligible = partialFinancialHardship(loan, income, 0.1)
-    const {payment, breakdown} = incomeBasedRepayment(loan, income, 20, 0.1)
+    const {payment, breakdown} = payeBasedRepayment(loan, income, 20, 0.1)
+    const forgiven =
+      breakdown.length + loan.payments === 20 * MONTHS
+        ? breakdown[breakdown.length - 1].balance
+        : 0
+
+    return {
+      label: 'Pay As Your Earn - PAYE',
+      color: Colors[7],
+      eligible:
+        eligible &&
+        [
+          'DIRECT_SUBSIDIZED',
+          'DIRECT_UNSUBSIDIZED',
+          'STAFFORD_SUBSIDIZED',
+          'STAFFORD_UNSUBSIDIZED',
+          'FFEL_PRO',
+          'FFEL_CONSOLIDATED',
+          'DIRECT_PLUS_PRO',
+          'DIRECT_PLUS_CONSOLIDATED'
+        ].includes(loan.type),
+      forgiven,
+      payment,
+      breakdown
+    }
+  },
+  REVISED_PAY_AS_YOU_EARN: (loan, income) => {
+    const eligible = partialFinancialHardship(loan, income, 0.1)
+    const {payment, breakdown} = payeBasedRepayment(loan, income, 20, 0.1, true)
     const forgiven =
       breakdown.length === 20 * MONTHS
         ? breakdown[breakdown.length - 1].balance
         : 0
 
     return {
-      label: 'Pay As Your Earn',
-      color: Colors[7],
+      label: 'Revised PAYE',
+      color: Colors[8],
       eligible:
         eligible &&
         [

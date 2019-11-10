@@ -41,6 +41,17 @@ export const partialFinancialHardship = (loan, income, rate = 0.15) => {
 export const proRatedTerm = (loan, term) =>
   (term * MONTHS - loan.payments) / MONTHS
 
+// Interested is subsidized for first 3 years of subsidized loans
+export const isInterestSubsidized = (loan, month, limit = 36) => {
+  return (
+    [
+      'DIRECT_SUBSIDIZED',
+      'DIRECT_CONSOLIDATED_SUBSIDIZED',
+      'STAFFORD_SUBSIDIZED'
+    ].includes(loan.type) && month <= limit - loan.payments
+  )
+}
+
 // TODO(wes): Inforce minimum payments
 export const fixedRateRepayment = (loan, term = 10) => {
   term = proRatedTerm(loan, term)
@@ -83,24 +94,26 @@ export const incomeBasedRepayment = (
   const payment = (discrectionary / MONTHS) * disRate
   const maxPayment = getFixedPayment(balance, rate, 10)
   const breakdown = getIncomeBreakdown(
+    loan,
     payment,
+    maxPayment,
     balance,
     rate,
     term,
-    0.03,
-    maxPayment
+    0.03 // Assumed yearly income increase
   )
 
   return {payment, breakdown}
 }
 
 export const getIncomeBreakdown = (
+  loan,
   initialPayment,
+  maxPayment,
   balance,
   interestRate,
   term,
-  growthRate,
-  maxPayment
+  growthRate
 ) => {
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
@@ -116,12 +129,111 @@ export const getIncomeBreakdown = (
     }
 
     let payment = last.payment
+    let subsidizedPayment = 0
     // Increase payment every year.
     if (i > 0 && i % MONTHS === 0) {
       payment = Math.min(payment * (1 + growthRate), maxPayment)
     }
     const interest = (last.endingBalance * interestRate) / MONTHS
-    const principle = payment - interest
+    if (isInterestSubsidized(loan, i) && payment < interest) {
+      subsidizedPayment = interest - payment
+    }
+    const principle = payment + subsidizedPayment - interest
+    const endingBalance = last.endingBalance - principle
+    const totalInterest = interest + last.totalInterest
+    const totalPayment = last.totalPayment + payment
+
+    breakdown.push({
+      balance: last.endingBalance,
+      payment,
+      interest,
+      principle,
+      endingBalance,
+      totalInterest,
+      totalPayment
+    })
+
+    if (endingBalance <= 0) {
+      break
+    }
+  }
+
+  return breakdown
+}
+
+export const payeBasedRepayment = (
+  loan,
+  income,
+  term = 20,
+  disRate = 0.1,
+  repay = false
+) => {
+  term = proRatedTerm(loan, term)
+  const {balance, rate} = loan
+  const discrectionary = getDiscretionaryIncome(
+    income.agi,
+    income.dependents,
+    income.state
+  )
+
+  const payment = (discrectionary / MONTHS) * disRate
+  const maxPayment = getFixedPayment(balance, rate, 10)
+  const breakdown = getPayeBreakdown(
+    loan,
+    payment,
+    maxPayment,
+    balance,
+    rate,
+    term,
+    0.03, // Assumed yearly income increase,
+    repay
+  )
+
+  return {payment, breakdown}
+}
+
+export const getPayeBreakdown = (
+  loan,
+  initialPayment,
+  maxPayment,
+  balance,
+  interestRate,
+  term,
+  growthRate,
+  repay
+) => {
+  const breakdown = []
+  for (let i = 0; i < term * MONTHS; i++) {
+    let last = breakdown[i - 1]
+    if (!last) {
+      last = {
+        balance,
+        payment: initialPayment,
+        endingBalance: balance,
+        totalInterest: 0,
+        totalPayment: 0
+      }
+    }
+
+    let payment = last.payment
+    let subsidizedPayment = 0
+    // Increase payment every year.
+    if (i > 0 && i % MONTHS === 0) {
+      payment = Math.min(payment * (1 + growthRate), maxPayment)
+    }
+    if (payment < 5) {
+      payment = 0
+    } else if (payment < 10) {
+      payment = 10
+    }
+    const interest = (last.endingBalance * interestRate) / MONTHS
+    if (isInterestSubsidized(loan, i) && payment < interest) {
+      subsidizedPayment = interest - payment
+    } else if (repay && payment < interest) {
+      // REPAYE gets 50% subsidy on remaining term
+      subsidizedPayment = (interest - payment) / 2
+    }
+    const principle = payment + subsidizedPayment - interest
     const endingBalance = last.endingBalance - principle
     const totalInterest = interest + last.totalInterest
     const totalPayment = last.totalPayment + payment

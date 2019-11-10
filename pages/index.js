@@ -102,9 +102,7 @@ const PaymentSummary = props => {
           ) : null}
         </>
       ) : (
-        <td colSpan="5">
-          Your loan type is not elgible for this repayment plan
-        </td>
+        <td colSpan="5">Your loan is not elgible for this repayment plan</td>
       )}
       <style jsx>{`
         div.rounded-circle {
@@ -136,7 +134,7 @@ PaymentSummary.propTypes = {
   income: PropTypes.object
 }
 
-const sortRepayments = (list, sort) => {
+const sortRepayments = (list, sort = {}) => {
   const {key, dir} = sort
   if (!key) {
     return list
@@ -180,7 +178,7 @@ const TableHeading = props => {
   return (
     <th onClick={() => onClick(id)} {...rest}>
       <span>{label}</span>
-      {sort.key === id ? <Caret dir={sort.dir} /> : null}
+      {sort && sort.key === id ? <Caret dir={sort.dir} /> : null}
       <style jsx>{`
         span {
           cursor: pointer;
@@ -200,16 +198,16 @@ TableHeading.propTypes = {
 const Home = () => {
   const [loan, setLoan] = useState()
   const [income, setIncome] = useState() // eslint-disable-line no-unused-vars
-  const [editIncome, onToggleEditIncome] = useToggle(false)
+  const [editIncome, onToggleEditIncome] = useToggle(true)
   const [chartType, setChartType] = useState('endingBalance')
   const [selectedPayments, setSelectedPayment] = useState([])
-  const [sort, setSort] = useState({key: 'totalInterest', dir: 'down'})
+  const [sort, setSort] = useState()
 
   const onSortClick = useCallback(
     key =>
       setSort({
         key,
-        dir: key === sort.key && sort.dir === 'up' ? 'down' : 'up'
+        dir: sort && key === sort.key && sort.dir === 'down' ? 'up' : 'down'
       }),
     [sort]
   )
@@ -242,7 +240,8 @@ const Home = () => {
           ? [
               Plans.INCOME_BASED_REPAY(loan, income),
               Plans.INCOME_BASED_REPAY_NEW(loan, income),
-              Plans.PAY_AS_YOU_EARN(loan, income)
+              Plans.PAY_AS_YOU_EARN(loan, income),
+              Plans.REVISED_PAY_AS_YOU_EARN(loan, income)
             ]
           : [])
       ].filter(r => r.breakdown.length),
