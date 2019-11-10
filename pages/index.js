@@ -256,8 +256,7 @@ const Home = () => {
           {
             ticks: {
               beginAtZero: true,
-              min: 0,
-              suggestedMax: 200 // TODO(wes): Calculate this
+              min: 0
             }
           }
         ]
