@@ -1,31 +1,29 @@
 import PropTypes from 'prop-types'
 import React from 'react'
+import styled from 'styled-components'
 
-const Select = props => {
-  const {children, ...rest} = props
+const Container = styled.div`
+  &::after {
+    height: 50%;
+    margin-top: -0.255em;
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+  }
+`
 
-  return (
-    <div className="form-control dropdown-toggle p-0 position-relative">
-      <select {...rest} className="form-control border-0 pr-4">
-        {children}
-      </select>
-      <style jsx>{`
-        div::after {
-          position: absolute;
-          right: 0.75rem;
-          height: 50%;
-          top: 50%;
-          margin-top: -0.255em;
-        }
+const Inner = styled.select`
+  -webkit-appearance: none;
+  height: calc(1.5em + 0.75rem);
+`
 
-        select {
-          -webkit-appearance: none;
-          height: calc(1.5em + 0.75rem);
-        }
-      `}</style>
-    </div>
-  )
-}
+const Select = ({children, ...props}) => (
+  <Container className="form-control dropdown-toggle p-0 position-relative">
+    <Inner {...props} className="form-control border-0 pr-4">
+      {children}
+    </Inner>
+  </Container>
+)
 
 Select.propTypes = {
   children: PropTypes.any

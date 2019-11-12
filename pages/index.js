@@ -1,20 +1,23 @@
+import BsContainer from 'react-bootstrap/Container'
 import Caret from '../components/caret'
 import Col from 'react-bootstrap/Col'
-import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
-import Nav from 'react-bootstrap/Nav'
 import Loan from '../components/loan'
+import Nav from 'react-bootstrap/Nav'
 import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useState} from 'react'
+import RoundedCircle from '../components/roundedCircle.js'
 import Row from 'react-bootstrap/Row'
 import Table from 'react-bootstrap/Table'
 import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
+import chartImg from '../images/chart-area.svg'
+import chartImg from '../images/chart-area.svg'
 import dynamic from 'next/dynamic'
+import styled from 'styled-components'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {classNames, currency, hexToRgbA} from '../shared/helpers'
-import chartImg from '../images/chart-area.svg'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
@@ -73,6 +76,7 @@ const PaymentSummary = props => {
     selected,
     ...rest
   } = props
+
   const [first] = breakdown
   const last = breakdown[breakdown.length - 1]
 
@@ -80,12 +84,10 @@ const PaymentSummary = props => {
     <tr
       className={classNames({'text-muted': !eligible, selected, eligible})}
       {...rest}>
-      <td>
-        {eligible && (
-          <div className="border border-white rounded-circle d-inline-block" />
-        )}
+      <td className={classNames({'cursor-pointer': eligible})}>
+        {eligible && <RoundedCircle color={color} selected={selected} />}
       </td>
-      <td>{label}</td>
+      <td className={classNames({'cursor-pointer': eligible})}>{label}</td>
       {eligible ? (
         <>
           <td>{Math.round(breakdown.length / 12)} years</td>
@@ -103,22 +105,6 @@ const PaymentSummary = props => {
       ) : (
         <td colSpan="5">Your loan is not elgible for this repayment plan</td>
       )}
-      <style jsx>{`
-        div.rounded-circle {
-          background-color: ${selected ? color : '#d6d8db'};
-          width: 15px;
-          height: 15px;
-        }
-
-        td {
-          vertical-align: middle;
-        }
-
-        tr.eligible td:nth-child(1),
-        tr.eligible td:nth-child(2) {
-          cursor: pointer;
-        }
-      `}</style>
     </tr>
   )
 }
@@ -176,13 +162,8 @@ const TableHeading = props => {
   const {id, label, sort, onClick, ...rest} = props
   return (
     <th onClick={() => onClick(id)} {...rest}>
-      <span>{label}</span>
+      <span className="cursor-pointer">{label}</span>
       {sort && sort.key === id ? <Caret dir={sort.dir} /> : null}
-      <style jsx>{`
-        span {
-          cursor: pointer;
-        }
-      `}</style>
     </th>
   )
 }
@@ -193,6 +174,16 @@ TableHeading.propTypes = {
   sort: PropTypes.object,
   onClick: PropTypes.func
 }
+
+const Container = styled(BsContainer)`
+  .repayments {
+    transition: all 0.25s ease-out;
+  }
+
+  td {
+    vertical-align: middle;
+  }
+`
 
 const Home = () => {
   const [loan, setLoan] = useState()
@@ -435,15 +426,6 @@ const Home = () => {
           </Col>
         </Row>
       </Container>
-      <style jsx>{`
-        :global(.repayments) {
-          transition: all 0.25s ease-out;
-        }
-
-        .bg-light.rounded-bottom {
-          cursor: pointer;
-        }
-      `}</style>
     </>
   )
 }
