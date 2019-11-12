@@ -6,7 +6,8 @@
     "lint": "eslint pages/*.js components/*.js shared/*.js",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "export": "next export"
   },
   "dependencies": {
     "@standardlabs/react-hooks": "1.0.3",
