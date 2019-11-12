@@ -13,7 +13,6 @@ import Table from 'react-bootstrap/Table'
 import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import chartImg from '../images/chart-area.svg'
-import chartImg from '../images/chart-area.svg'
 import dynamic from 'next/dynamic'
 import styled from 'styled-components'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
@@ -216,7 +215,7 @@ const Home = () => {
     if (loan && selectedPayments.length === 0) {
       setSelectedPayment(repayments.slice(0, 2).map(r => r.label))
     }
-  }, [loan])
+  }, [loan]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
 
