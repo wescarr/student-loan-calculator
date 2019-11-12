@@ -220,6 +220,8 @@ const Home = () => {
     }
   }
 
+  // We intentially only rely on `loan` as a dependency to set the default
+  // selected payments when the loan value initially changes.
   useEffect(() => {
     if (loan && selectedPayments.length === 0) {
       setSelectedPayment(repayments.slice(0, 2).map(r => r.label))
