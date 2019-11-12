@@ -1,9 +1,9 @@
-import Badge from 'react-bootstrap/Badge'
 import Caret from '../components/caret'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
+import Nav from 'react-bootstrap/Nav'
 import Loan from '../components/loan'
 import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useState} from 'react'
@@ -14,7 +14,6 @@ import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import dynamic from 'next/dynamic'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {classNames, currency, hexToRgbA} from '../shared/helpers'
-import {useToggle} from '@standardlabs/react-hooks'
 import chartImg from '../images/chart-area.svg'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
@@ -198,7 +197,7 @@ TableHeading.propTypes = {
 const Home = () => {
   const [loan, setLoan] = useState()
   const [income, setIncome] = useState() // eslint-disable-line no-unused-vars
-  const [editIncome, onToggleEditIncome] = useToggle(true)
+  const [editIncome, setEditIncome] = useState(false)
   const [chartType, setChartType] = useState('endingBalance')
   const [selectedPayments, setSelectedPayment] = useState([])
   const [sort, setSort] = useState()
@@ -297,23 +296,35 @@ const Home = () => {
               </p>
             </div>
             <div className="shadow rounded mb-4">
+              <Nav
+                activeKey={editIncome ? 'income' : 'loan'}
+                onSelect={key => setEditIncome(key === 'income')}
+                justify
+                variant="pills"
+                className="px-3 pt-3">
+                <Nav.Item>
+                  <Nav.Link eventKey="loan">Loan</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="income">Income</Nav.Link>
+                </Nav.Item>
+              </Nav>
               <div className="px-3 pt-3 pb-1">
-                <Loan onChange={setLoan} />
-              </div>
-              <div
-                className="bg-light px-3 py-2 rounded-bottom"
-                onClick={!editIncome ? onToggleEditIncome : null}>
                 {editIncome ? (
                   <IncomeForm onChange={setIncome} />
                 ) : (
-                  <small className="text-muted">
-                    <Badge variant="secondary" className="rounded-circle p-0">
-                      <span className="plus">+</span>
-                    </Badge>{' '}
-                    Enter your income to see additional options
-                  </small>
+                  <Loan onChange={setLoan} />
                 )}
               </div>
+              {!editIncome && !income && (
+                <div
+                  className="bg-light px-3 py-2 rounded-bottom"
+                  onClick={() => setEditIncome(true)}>
+                  <small className="text-muted">
+                    Enter your income to see additional options
+                  </small>
+                </div>
+              )}
             </div>
           </Col>
         </Row>
@@ -429,13 +440,6 @@ const Home = () => {
 
         .bg-light.rounded-bottom {
           cursor: pointer;
-        }
-
-        .plus {
-          font-size: 20px;
-          line-height: 1em;
-          display: block;
-          padding: 0 5px 3px;
         }
       `}</style>
     </>
