@@ -14,8 +14,7 @@ export const hexToRgbA = (hex, alpha) => {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
-export const classNames = classes => {
-  return Object.entries(classes)
+export const classNames = classes =>
+  Object.entries(classes)
     .map(([name, truthy]) => truthy && name)
     .join(' ')
-}

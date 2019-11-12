@@ -6,6 +6,9 @@ export const States = {
 
 export const MONTHS = 12
 
+// Annual income growth percentage
+export const INCOME_GROWTH_RATE = 0.05
+
 // 0 index is the amount for each dependent over 8 persons
 // Based on: https://aspe.hhs.gov/poverty-guidelines
 const FEDERAL_POVERY_LEVEL = {
@@ -161,7 +164,7 @@ export const incomeBasedRepayment = (
     balance,
     rate,
     term,
-    0.03 // Assumed yearly income increase
+    INCOME_GROWTH_RATE
   )
 
   return {payment, breakdown}
@@ -246,7 +249,7 @@ export const payeBasedRepayment = (
     balance,
     rate,
     term,
-    0.03, // Assumed yearly income increase,
+    INCOME_GROWTH_RATE,
     repay
   )
 
@@ -331,8 +334,6 @@ export const icrBasedRepayment = (loan, income, term = 25, disRate = 0.2) => {
     income.filing === 'SINGLE' ? 'single' : 'married'
   )
 
-  console.log(income.filing, incomeFactor)
-
   const disPay = (discrectionary / MONTHS) * disRate
   const fixedPay = getFixedPayment(balance, rate, 12) * incomeFactor
 
@@ -345,7 +346,7 @@ export const icrBasedRepayment = (loan, income, term = 25, disRate = 0.2) => {
     balance,
     rate,
     term,
-    0.03 // Assumed yearly income increase
+    INCOME_GROWTH_RATE
   )
 
   return {payment, breakdown}
