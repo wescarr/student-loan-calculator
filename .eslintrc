@@ -20,7 +20,7 @@
   "globals": {
     "google": false
   },
-  "plugins": ["react"],
+  "plugins": ["react", "react-hooks"],
   "rules": {
     "linebreak-style": ["error"],
     "semi": ["error", "never"],
@@ -31,7 +31,9 @@
         "allow": ["log", "warn", "error"]
       }
     ],
-    "space-infix-ops": ["error"]
+    "space-infix-ops": ["error"],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   },
   "settings": {
     "react": {
