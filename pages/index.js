@@ -1,20 +1,20 @@
-import Badge from 'react-bootstrap/Badge'
 import Caret from '../components/caret'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
+import Nav from 'react-bootstrap/Nav'
 import Loan from '../components/loan'
 import PropTypes from 'prop-types'
-import React, {useCallback, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import Table from 'react-bootstrap/Table'
 import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import dynamic from 'next/dynamic'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
-import {currency, hexToRgbA} from '../shared/helpers'
-import {useToggle} from '@standardlabs/react-hooks'
+import {classNames, currency, hexToRgbA} from '../shared/helpers'
+import chartImg from '../images/chart-area.svg'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
@@ -27,13 +27,13 @@ const getYearBreakdown = (breakdown, attr) => {
   return years
 }
 
-const dataset = (label, data, bgColor, selected, anySelected) => ({
+const dataset = (label, data, bgColor) => ({
   label,
   data,
   fill: 'origin',
   lineTension: 0.1,
   borderColor: bgColor,
-  backgroundColor: hexToRgbA(bgColor, selected ? 1 : anySelected ? 0.2 : 0.6),
+  backgroundColor: hexToRgbA(bgColor, 0.8),
   hoverBackgroundColor: hexToRgbA(bgColor, 1),
   borderWidth: 0,
   pointRadius: 0,
@@ -41,18 +41,10 @@ const dataset = (label, data, bgColor, selected, anySelected) => ({
   pointBackgroundColor: bgColor
 })
 
-const getChartData = (repayments, attr, selected) => {
+const getChartData = (repayments, attr) => {
   const datasets = repayments
     .filter(r => r.eligible)
-    .map(r =>
-      dataset(
-        r.label,
-        getYearBreakdown(r.breakdown, attr),
-        r.color,
-        r.label === selected,
-        selected
-      )
-    )
+    .map(r => dataset(r.label, getYearBreakdown(r.breakdown, attr), r.color))
 
   // Find largest data set to construct labels
   let max = 0
@@ -71,14 +63,27 @@ const getChartData = (repayments, attr, selected) => {
 }
 
 const PaymentSummary = props => {
-  const {color, label, eligible, breakdown, forgiven, income, ...rest} = props
+  const {
+    color,
+    label,
+    eligible,
+    breakdown,
+    forgiven,
+    income,
+    selected,
+    ...rest
+  } = props
   const [first] = breakdown
   const last = breakdown[breakdown.length - 1]
 
   return (
-    <tr className={`${!eligible ? 'text-muted' : ''}`} {...rest}>
+    <tr
+      className={classNames({'text-muted': !eligible, selected, eligible})}
+      {...rest}>
       <td>
-        <div className="border border-white rounded-circle d-inline-block" />
+        {eligible && (
+          <div className="border border-white rounded-circle d-inline-block" />
+        )}
       </td>
       <td>{label}</td>
       {eligible ? (
@@ -96,15 +101,22 @@ const PaymentSummary = props => {
           ) : null}
         </>
       ) : (
-        <td colSpan="5">
-          Your loan type is not elgible for this repayment plan
-        </td>
+        <td colSpan="5">Your loan is not elgible for this repayment plan</td>
       )}
       <style jsx>{`
         div.rounded-circle {
-          background-color: ${eligible ? color : '#d6d8db'};
+          background-color: ${selected ? color : '#d6d8db'};
           width: 15px;
           height: 15px;
+        }
+
+        td {
+          vertical-align: middle;
+        }
+
+        tr.eligible td:nth-child(1),
+        tr.eligible td:nth-child(2) {
+          cursor: pointer;
         }
       `}</style>
     </tr>
@@ -117,10 +129,11 @@ PaymentSummary.propTypes = {
   breakdown: PropTypes.array.isRequired,
   eligible: PropTypes.bool.isRequired,
   forgiven: PropTypes.number,
+  selected: PropTypes.bool,
   income: PropTypes.object
 }
 
-const sortRepayments = (list, sort) => {
+const sortRepayments = (list, sort = {}) => {
   const {key, dir} = sort
   if (!key) {
     return list
@@ -164,7 +177,7 @@ const TableHeading = props => {
   return (
     <th onClick={() => onClick(id)} {...rest}>
       <span>{label}</span>
-      {sort.key === id ? <Caret dir={sort.dir} /> : null}
+      {sort && sort.key === id ? <Caret dir={sort.dir} /> : null}
       <style jsx>{`
         span {
           cursor: pointer;
@@ -184,37 +197,58 @@ TableHeading.propTypes = {
 const Home = () => {
   const [loan, setLoan] = useState()
   const [income, setIncome] = useState() // eslint-disable-line no-unused-vars
-  const [editIncome, onToggleEditIncome] = useToggle(false)
+  const [editIncome, setEditIncome] = useState(false)
   const [chartType, setChartType] = useState('endingBalance')
-  const [selectedPayment, setSelectedPayment] = useState()
-  const [sort, setSort] = useState({key: 'totalInterest', dir: 'up'})
+  const [selectedPayments, setSelectedPayment] = useState([])
+  const [sort, setSort] = useState()
 
   const onSortClick = useCallback(
     key =>
       setSort({
         key,
-        dir: key === sort.key && sort.dir === 'up' ? 'down' : 'up'
+        dir: sort && key === sort.key && sort.dir === 'down' ? 'up' : 'down'
       }),
     [sort]
   )
+
+  const onPaymentSummaryClick = label => {
+    if (selectedPayments.includes(label) && selectedPayments.length > 1) {
+      setSelectedPayment(selectedPayments.filter(l => l !== label))
+    } else {
+      setSelectedPayment([...selectedPayments, label])
+    }
+  }
+
+  // We intentially only rely on `loan` as a dependency to set the default
+  // selected payments when the loan value initially changes.
+  useEffect(() => {
+    if (loan && selectedPayments.length === 0) {
+      setSelectedPayment(repayments.slice(0, 2).map(r => r.label))
+    }
+  }, [loan])
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
 
   let repayments, chartData, chartOptions
   if (loan) {
-    repayments = [
-      Plans.STANDARD_FIXED(loan),
-      Plans.GRADUATED(loan),
-      Plans.FIXED_EXTENDED(loan),
-      Plans.GRADUATED_EXTENDED(loan),
-      ...(income
-        ? [
-            Plans.INCOME_BASED_REPAY(loan, income),
-            Plans.INCOME_BASED_REPAY_NEW(loan, income),
-            Plans.PAY_AS_YOU_EARN(loan, income)
-          ]
-        : [])
-    ].filter(r => r.breakdown.length)
+    repayments = sortRepayments(
+      [
+        Plans.STANDARD_FIXED(loan),
+        Plans.GRADUATED(loan),
+        Plans.FIXED_EXTENDED(loan),
+        Plans.GRADUATED_EXTENDED(loan),
+        ...(income
+          ? [
+              Plans.INCOME_BASED_REPAY(loan, income),
+              Plans.INCOME_BASED_REPAY_NEW(loan, income),
+              Plans.PAY_AS_YOU_EARN(loan, income),
+              Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
+              Plans.INCOME_CONTINGENT_REPAY(loan, income)
+            ]
+          : [])
+      ].filter(r => r.breakdown.length),
+      sort
+    )
 
     chartOptions = {
       legend: {display: false},
@@ -223,8 +257,7 @@ const Home = () => {
           {
             ticks: {
               beginAtZero: true,
-              min: 0,
-              suggestedMax: 200 // TODO(wes): Calculate this
+              min: 0
             }
           }
         ]
@@ -241,7 +274,12 @@ const Home = () => {
       }
     }
 
-    chartData = getChartData(repayments, chartType, selectedPayment)
+    chartData =
+      !!selectedPayments.length &&
+      getChartData(
+        repayments.filter(r => selectedPayments.includes(r.label)),
+        chartType
+      )
   }
 
   return (
@@ -260,23 +298,35 @@ const Home = () => {
               </p>
             </div>
             <div className="shadow rounded mb-4">
+              <Nav
+                activeKey={editIncome ? 'income' : 'loan'}
+                onSelect={key => setEditIncome(key === 'income')}
+                justify
+                variant="pills"
+                className="px-3 pt-3">
+                <Nav.Item>
+                  <Nav.Link eventKey="loan">Loan</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="income">Income</Nav.Link>
+                </Nav.Item>
+              </Nav>
               <div className="px-3 pt-3 pb-1">
-                <Loan onChange={setLoan} />
-              </div>
-              <div
-                className="bg-light px-3 py-2 rounded-bottom"
-                onClick={!editIncome ? onToggleEditIncome : null}>
                 {editIncome ? (
                   <IncomeForm onChange={setIncome} />
                 ) : (
-                  <small className="text-muted">
-                    <Badge variant="secondary" className="rounded-circle p-0">
-                      <span className="plus">+</span>
-                    </Badge>{' '}
-                    Enter your income to see additional options
-                  </small>
+                  <Loan onChange={setLoan} />
                 )}
               </div>
+              {!editIncome && !income && (
+                <div
+                  className="bg-light px-3 py-2 rounded-bottom"
+                  onClick={() => setEditIncome(true)}>
+                  <small className="text-muted">
+                    Enter your income to see additional options
+                  </small>
+                </div>
+              )}
             </div>
           </Col>
         </Row>
@@ -287,7 +337,9 @@ const Home = () => {
                 <Table borderless striped>
                   <thead>
                     <tr>
-                      <th />
+                      <th>
+                        <img src={chartImg} />
+                      </th>
                       <th>Repayment plan</th>
                       <TableHeading
                         label="Term"
@@ -332,15 +384,15 @@ const Home = () => {
                         {...r}
                         income={income}
                         key={r.label}
-                        onMouseEnter={() => setSelectedPayment(r.label)}
-                        onMouseLeave={() => setSelectedPayment()}
+                        selected={selectedPayments.includes(r.label)}
+                        onClick={() => onPaymentSummaryClick(r.label)}
                       />
                     ))}
                   </tbody>
                 </Table>
                 {chartData && (
                   <>
-                    <div className="my-2 text-center">
+                    <div className="mt-4 mb-2 text-center">
                       <ToggleButtonGroup
                         type="radio"
                         name="chart_type"
@@ -390,13 +442,6 @@ const Home = () => {
 
         .bg-light.rounded-bottom {
           cursor: pointer;
-        }
-
-        .plus {
-          font-size: 20px;
-          line-height: 1em;
-          display: block;
-          padding: 0 5px 3px;
         }
       `}</style>
     </>

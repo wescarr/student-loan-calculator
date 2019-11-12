@@ -2,8 +2,10 @@ import {
   MONTHS,
   fixedRateRepayment,
   graduatedRepayment,
+  icrBasedRepayment,
   incomeBasedRepayment,
-  partialFinancialHardship
+  partialFinancialHardship,
+  payeBasedRepayment
 } from './calc'
 
 export const LoanTypes = {
@@ -26,20 +28,21 @@ export const LoanTypes = {
 export const TaxFilingStatus = {
   SINGLE: 'Single',
   MARRIED_JOINT: 'Married filing jointly',
-  MARRIED_SEPARATE: 'Married filing separately',
-  HEAD_OF_HOUSEHOLD: 'Head of household'
+  MARRIED_SEPARATE: 'Married filing separately'
 }
 
-// Colors: https://www.colorbox.io/#steps=7#hue_start=184#hue_end=359#hue_curve=linear#sat_start=52#sat_end=90#sat_curve=linear#sat_rate=130#lum_start=100#lum_end=100#lum_curve=easeOutQuad#minor_steps_map=0
+// Colors: https://coolors.co
 const Colors = [
-  '#3E94FF',
-  '#3129FF',
-  '#8F14FF',
-  '#FF00FC',
-  '#FF0080',
-  '#FF0004',
-  '#53F4FF',
-  '#48C6FF'
+  '#DB222A',
+  '#1F7A8C',
+  '#053C5E',
+  '#2C8C43',
+  '#412722',
+  '#2F52E0',
+  '#4C5B5C',
+  '#BCED09',
+  '#E9B44C',
+  '#985F6F'
 ]
 
 export const RepaymentPlans = {
@@ -105,7 +108,7 @@ export const RepaymentPlans = {
     const eligible = partialFinancialHardship(loan, income, 0.15)
     const {payment, breakdown} = incomeBasedRepayment(loan, income)
     const forgiven =
-      breakdown.length === 25 * MONTHS
+      breakdown.length + loan.payments === 25 * MONTHS
         ? breakdown[breakdown.length - 1].balance
         : 0
 
@@ -133,7 +136,7 @@ export const RepaymentPlans = {
     const eligible = partialFinancialHardship(loan, income, 0.1)
     const {payment, breakdown} = incomeBasedRepayment(loan, income, 20, 0.1)
     const forgiven =
-      breakdown.length === 20 * MONTHS
+      breakdown.length + loan.payments === 20 * MONTHS
         ? breakdown[breakdown.length - 1].balance
         : 0
 
@@ -159,14 +162,14 @@ export const RepaymentPlans = {
   },
   PAY_AS_YOU_EARN: (loan, income) => {
     const eligible = partialFinancialHardship(loan, income, 0.1)
-    const {payment, breakdown} = incomeBasedRepayment(loan, income, 20, 0.1)
+    const {payment, breakdown} = payeBasedRepayment(loan, income, 20, 0.1)
     const forgiven =
-      breakdown.length === 20 * MONTHS
+      breakdown.length + loan.payments === 20 * MONTHS
         ? breakdown[breakdown.length - 1].balance
         : 0
 
     return {
-      label: 'Pay As Your Earn',
+      label: 'Pay As Your Earn - PAYE',
       color: Colors[7],
       eligible:
         eligible &&
@@ -180,6 +183,57 @@ export const RepaymentPlans = {
           'DIRECT_PLUS_PRO',
           'DIRECT_PLUS_CONSOLIDATED'
         ].includes(loan.type),
+      forgiven,
+      payment,
+      breakdown
+    }
+  },
+  REVISED_PAY_AS_YOU_EARN: (loan, income) => {
+    const eligible = partialFinancialHardship(loan, income, 0.1)
+    const {payment, breakdown} = payeBasedRepayment(loan, income, 20, 0.1, true)
+    const forgiven =
+      breakdown.length === 20 * MONTHS
+        ? breakdown[breakdown.length - 1].balance
+        : 0
+
+    return {
+      label: 'Revised PAYE',
+      color: Colors[8],
+      eligible:
+        eligible &&
+        [
+          'DIRECT_SUBSIDIZED',
+          'DIRECT_UNSUBSIDIZED',
+          'STAFFORD_SUBSIDIZED',
+          'STAFFORD_UNSUBSIDIZED',
+          'FFEL_PRO',
+          'FFEL_CONSOLIDATED',
+          'DIRECT_PLUS_PRO',
+          'DIRECT_PLUS_CONSOLIDATED'
+        ].includes(loan.type),
+      forgiven,
+      payment,
+      breakdown
+    }
+  },
+  INCOME_CONTINGENT_REPAY: (loan, income) => {
+    const {payment, breakdown} = icrBasedRepayment(loan, income, 25, 0.2)
+    const forgiven =
+      breakdown.length === 25 * MONTHS
+        ? breakdown[breakdown.length - 1].balance
+        : 0
+
+    return {
+      label: 'Income Contingent Repay - ICR',
+      color: Colors[9],
+      eligible: [
+        'DIRECT_SUBSIDIZED',
+        'DIRECT_UNSUBSIDIZED',
+        'DIRECT_CONSOLIDATED_SUBSIDIZED',
+        'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+        'DIRECT_PLUS_CONSOLIDATED',
+        'DIRECT_PLUS_PRO'
+      ].includes(loan.type),
       forgiven,
       payment,
       breakdown
