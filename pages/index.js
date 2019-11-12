@@ -3,18 +3,18 @@ import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
-import Nav from 'react-bootstrap/Nav'
 import Loan from '../components/loan'
+import Nav from 'react-bootstrap/Nav'
 import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import Table from 'react-bootstrap/Table'
 import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
+import chartImg from '../images/chart-area.svg'
 import dynamic from 'next/dynamic'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {classNames, currency, hexToRgbA} from '../shared/helpers'
-import chartImg from '../images/chart-area.svg'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
@@ -225,7 +225,7 @@ const Home = () => {
     if (loan && selectedPayments.length === 0) {
       setSelectedPayment(repayments.slice(0, 2).map(r => r.label))
     }
-  }, [loan])
+  }, [loan]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
 
