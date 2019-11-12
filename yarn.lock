@@ -818,10 +818,10 @@
   resolved "https://registry.yarnpkg.com/@restart/hooks/-/hooks-0.3.15.tgz#17cb37a272dfb9cbacf83614a5a7170e68f17d75"
   integrity sha512-rVNba1A2oMzKBg16fCrrHmCf4JjOzFhT9TWR8J+Y8iOcY4zffxtP3ke7mEsakvghHZT+9//uDOPSSeuBDW41GQ==
 
-"@standardlabs/react-hooks@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@standardlabs/react-hooks/-/react-hooks-1.0.1.tgz#0e7e4995259f29de96b0a9a7f02f02308dd66562"
-  integrity sha512-OvL4CtrVseu7as3Go4zaxtkSCDh2K/0OmSdTZhoQJuWHj7l/EJvd7BLMIxtFRFRH5Xm9cylNoVvyUFTvX6uwrw==
+"@standardlabs/react-hooks@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@standardlabs/react-hooks/-/react-hooks-1.0.2.tgz#87519da63b5b7a5769b06aded871263db4c7e297"
+  integrity sha512-4lYqGsYtaQN6m98U/8fuudTevjF7EUuy5LgQmwoLqEB8OELQ5hqZFJCnsbnUrglU5b+CAOnWdMT9OzR8paEWxw==
   dependencies:
     lodash.debounce "^4.0.8"
 
