@@ -270,7 +270,16 @@ const Home = () => {
         ]
       },
       tooltips: {
-        displayColors: false,
+        // Draws tooltips whenever the mouse hovers over the chart. This is
+        // useful because we draw the same tooltip for each bar in a "bar" in a
+        // group of bars and it is a bit jarring to continually redraw the same
+        // tooltip as the mouse moves across the bars.
+        intersect: false,
+
+        // This includes every dataset in a group of bars inside the tooltip.
+        mode: 'index',
+
+        // Write simplified dollar values like "$10k" or "$1.2m"
         callbacks: {
           label: (item, data) =>
             `${data.datasets[item.datasetIndex].label}: ${currency(
