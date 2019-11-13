@@ -14,7 +14,13 @@ import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import chartImg from '../images/chart-area.svg'
 import dynamic from 'next/dynamic'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
-import {classNames, currency, hexToRgbA} from '../shared/helpers'
+
+import {
+  classNames,
+  currency,
+  hexToRgbA,
+  simplifyCurrency
+} from '../shared/helpers'
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
@@ -257,6 +263,7 @@ const Home = () => {
           {
             ticks: {
               beginAtZero: true,
+              callback: simplifyCurrency,
               min: 0
             }
           }
