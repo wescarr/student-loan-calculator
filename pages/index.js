@@ -133,7 +133,7 @@ const PaymentSummary = props => {
               </>
             )}
             <span className="gutter rounded">
-              <span className="range rounded bg-primary" />
+              <span className="range rounded bg-info" />
             </span>
           </td>
           <td className="text-right">{currency(last.totalInterest)}</td>
