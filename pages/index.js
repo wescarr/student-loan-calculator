@@ -24,6 +24,19 @@ import {
 
 const Chart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
 
+// Colors: https://blog.graphiq.com/finding-the-right-color-palettes-for-data-visualizations-fcd4e707a283
+const Colors = [
+  '#86cacf',
+  '#3883b6',
+  '#1c2d80',
+  '#f8cd60',
+  '#e87e3a',
+  '#a34428',
+  '#f19a9b',
+  '#7b2995',
+  '#461664'
+]
+
 const getYearBreakdown = (breakdown, attr) => {
   const years = []
   for (let i = 12; i <= breakdown.length; i += 12) {
@@ -31,6 +44,20 @@ const getYearBreakdown = (breakdown, attr) => {
   }
 
   return years
+}
+
+const getPaymentsRange = repayments => {
+  const first = repayments.map(r => r.breakdown[0].payment)
+  const last = repayments.map(r => r.breakdown[r.breakdown.length - 1].payment)
+
+  const range = {
+    min: Math.min(...first),
+    max: Math.max(...last)
+  }
+
+  range.delta = range.max - range.min
+
+  return range
 }
 
 const dataset = (label, data, bgColor) => ({
@@ -77,6 +104,7 @@ const PaymentSummary = props => {
     forgiven,
     income,
     selected,
+    range,
     ...rest
   } = props
   const [first] = breakdown
@@ -95,15 +123,23 @@ const PaymentSummary = props => {
       {eligible ? (
         <>
           <td>{Math.round(breakdown.length / 12)} years</td>
-          <td className="h6">
-            {first.payment === last.payment
-              ? `${currency(first.payment)}`
-              : `${currency(first.payment)} - ${currency(last.payment)}`}
+          <td className="payment">
+            {first.payment === last.payment ? (
+              <span>{currency(first.payment)}</span>
+            ) : (
+              <>
+                <span>{currency(first.payment)}</span> -{' '}
+                <span>{currency(last.payment)}</span>
+              </>
+            )}
+            <span className="gutter rounded">
+              <span className="range rounded bg-primary" />
+            </span>
           </td>
-          <td className="text-right h6">{currency(last.totalInterest)}</td>
-          <td className="text-right h6">{currency(last.totalPayment)}</td>
+          <td className="text-right">{currency(last.totalInterest)}</td>
+          <td className="text-right">{currency(last.totalPayment)}</td>
           {income ? (
-            <td className="text-right h6">{currency(forgiven || 0)}</td>
+            <td className="text-right">{currency(forgiven || 0)}</td>
           ) : null}
         </>
       ) : (
@@ -124,6 +160,33 @@ const PaymentSummary = props => {
         tr.eligible td:nth-child(2) {
           cursor: pointer;
         }
+
+        .payment {
+          width: 150px;
+          position: relative;
+        }
+
+        .payment {
+          padding-left: ${((first.payment - range.min) / range.delta) * 150}px;
+        }
+
+        .payment .gutter {
+          position: absolute;
+          bottom: 8px;
+          height: 4px;
+          left: 0;
+          right: 0;
+          background: #ccc;
+        }
+
+        .payment .range {
+          display: block;
+          margin-left: ${((first.payment - range.min) / range.delta) * 100}%;
+          width: ${((last.payment - first.payment) / range.delta) * 100}%;
+          min-width: 4px;
+          height: 4px;
+          background: red;
+        }
       `}</style>
     </tr>
   )
@@ -136,7 +199,8 @@ PaymentSummary.propTypes = {
   eligible: PropTypes.bool.isRequired,
   forgiven: PropTypes.number,
   selected: PropTypes.bool,
-  income: PropTypes.object
+  income: PropTypes.object,
+  range: PropTypes.object
 }
 
 const sortRepayments = (list, sort = {}) => {
@@ -235,7 +299,7 @@ const Home = () => {
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
 
-  let repayments, chartData, chartOptions
+  let repayments, range, chartData, chartOptions
   if (loan) {
     repayments = sortRepayments(
       [
@@ -252,9 +316,13 @@ const Home = () => {
               Plans.INCOME_CONTINGENT_REPAY(loan, income)
             ]
           : [])
-      ].filter(r => r.breakdown.length),
+      ]
+        .filter(r => r.breakdown.length)
+        .map((r, i) => ({...r, color: Colors[i]})),
       sort
     )
+
+    range = getPaymentsRange(repayments)
 
     chartOptions = {
       legend: {display: false},
@@ -386,10 +454,11 @@ const Home = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {sortRepayments(repayments, sort).map(r => (
+                    {repayments.map(r => (
                       <PaymentSummary
                         {...r}
                         income={income}
+                        range={range}
                         key={r.label}
                         selected={selectedPayments.includes(r.label)}
                         onClick={() => onPaymentSummaryClick(r.label)}

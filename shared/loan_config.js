@@ -31,30 +31,14 @@ export const TaxFilingStatus = {
   MARRIED_SEPARATE: 'Married filing separately'
 }
 
-// Colors: https://coolors.co
-const Colors = [
-  '#DB222A',
-  '#1F7A8C',
-  '#053C5E',
-  '#2C8C43',
-  '#412722',
-  '#2F52E0',
-  '#4C5B5C',
-  '#BCED09',
-  '#E9B44C',
-  '#985F6F'
-]
-
 export const RepaymentPlans = {
   STANDARD_FIXED: loan => ({
     label: 'Standard Fixed',
-    color: Colors[0],
     eligible: true,
     ...fixedRateRepayment(loan)
   }),
   FIXED_EXTENDED: loan => ({
     label: 'Fixed Extended',
-    color: Colors[1],
     eligible: [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -71,7 +55,6 @@ export const RepaymentPlans = {
   }),
   GRADUATED: loan => ({
     label: 'Graduated',
-    color: Colors[3],
     eligible: [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -89,7 +72,6 @@ export const RepaymentPlans = {
   }),
   GRADUATED_EXTENDED: loan => ({
     label: 'Graduated Extended',
-    color: Colors[4],
     eligible: [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -114,7 +96,6 @@ export const RepaymentPlans = {
 
     return {
       label: 'Income Based Repay - IBR',
-      color: Colors[5],
       eligible:
         eligible &&
         [
@@ -142,7 +123,6 @@ export const RepaymentPlans = {
 
     return {
       label: 'New IBR',
-      color: Colors[6],
       eligible:
         eligible &&
         [
@@ -170,7 +150,6 @@ export const RepaymentPlans = {
 
     return {
       label: 'Pay As Your Earn - PAYE',
-      color: Colors[7],
       eligible:
         eligible &&
         [
@@ -198,7 +177,6 @@ export const RepaymentPlans = {
 
     return {
       label: 'Revised PAYE',
-      color: Colors[8],
       eligible:
         eligible &&
         [
@@ -225,7 +203,6 @@ export const RepaymentPlans = {
 
     return {
       label: 'Income Contingent Repay - ICR',
-      color: Colors[9],
       eligible: [
         'DIRECT_SUBSIDIZED',
         'DIRECT_UNSUBSIDIZED',
