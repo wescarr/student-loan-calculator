@@ -5,6 +5,16 @@ export const currency = (num, round = true) =>
     minimumFractionDigits: 0
   })
 
+export const simplifyCurrency = amount => {
+  let remaining = amount, index = 0
+  while (remaining >= 1000) {
+    remaining /= 1000
+    index++
+  }
+
+  return `${currency(remaining, false)}${['', 'k', 'm', 'B', 'T'][index]}`
+}
+
 export const hexToRgbA = (hex, alpha) => {
   hex = hex.replace(/\D/, '')
   const r = parseInt(hex.slice(0, 2), 16)
