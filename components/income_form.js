@@ -14,7 +14,7 @@ import {
 } from '@standardlabs/react-hooks'
 
 const IncomeForm = ({onChange, ...props}) => {
-  const [agi, onChangeAgi] = useDeferredOnChange(50000, 150, asInt)
+  const [agi, onChangeAgi] = useDeferredOnChange(20000, 150, asInt)
   const [dependents, onChangeDependants] = useOnChange(1, asInt)
   const [state, onChangeState] = useOnChange(States.LOWER_48)
   const [filing, onChangeFiling] = useOnChange('SINGLE')

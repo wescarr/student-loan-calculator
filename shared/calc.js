@@ -17,38 +17,38 @@ const FEDERAL_POVERY_LEVEL = {
   HAWAII: [5080, 14380, 19460, 24540, 29620, 34700, 39780, 44860, 49940]
 }
 
-// https://www.federalregister.gov/documents/2018/08/02/2018-16582/annual-updates-to-the-income-contingent-repayment-icr-plan-formula-for-2018-william-d-ford-federal
+// https://www.federalregister.gov/documents/2019/05/22/2019-10623/annual-updates-to-the-income-contingent-repayment-icr-plan-formula-for-2019-william-d-ford-federal
 const INCOME_PERCENTAGE_FACTOR = {
   single: [
-    {income: 11860, factor: 0.55},
-    {income: 16318, factor: 0.5779},
-    {income: 20997, factor: 0.6057},
-    {income: 25782, factor: 0.6623},
-    {income: 30352, factor: 0.7189},
-    {income: 36114, factor: 0.8033},
-    {income: 45361, factor: 0.8877},
-    {income: 56891, factor: 1.0},
-    {income: 68424, factor: 1.0},
-    {income: 82238, factor: 1.118},
-    {income: 105302, factor: 1.235},
-    {income: 149143, factor: 1.412},
-    {income: 171006, factor: 1.5},
-    {income: 304590, factor: 2.0}
+    {income: 12147, factor: 0.55},
+    {income: 16714, factor: 0.5779},
+    {income: 21506, factor: 0.6057},
+    {income: 26407, factor: 0.6623},
+    {income: 31087, factor: 0.7189},
+    {income: 36989, factor: 0.8033},
+    {income: 46460, factor: 0.8877},
+    {income: 58269, factor: 1.0},
+    {income: 70081, factor: 1.0},
+    {income: 84229, factor: 1.118},
+    {income: 107852, factor: 1.235},
+    {income: 152755, factor: 1.412},
+    {income: 175147, factor: 1.5},
+    {income: 311967, factor: 2.0}
   ],
   married: [
-    {income: 11860, factor: 0.5052},
-    {income: 18712, factor: 0.5668},
-    {income: 22299, factor: 0.5956},
-    {income: 29152, factor: 0.6779},
-    {income: 36114, factor: 0.7522},
-    {income: 45361, factor: 0.8761},
-    {income: 56890, factor: 1.0},
-    {income: 68424, factor: 1.0},
-    {income: 85724, factor: 1.094},
-    {income: 114547, factor: 1.25},
-    {income: 154905, factor: 1.406},
-    {income: 216641, factor: 1.5},
-    {income: 354009, factor: 2.0}
+    {income: 12147, factor: 0.5052},
+    {income: 19165, factor: 0.5668},
+    {income: 22839, factor: 0.5956},
+    {income: 29858, factor: 0.6779},
+    {income: 36989, factor: 0.7522},
+    {income: 46460, factor: 0.8761},
+    {income: 58268, factor: 1.0},
+    {income: 70081, factor: 1.0},
+    {income: 87800, factor: 1.094},
+    {income: 117322, factor: 1.25},
+    {income: 158657, factor: 1.406},
+    {income: 221889, factor: 1.5},
+    {income: 362583, factor: 2.0}
   ]
 }
 
@@ -78,18 +78,18 @@ export const getIncomePercentageFactor = (income, status = 'single') => {
   return lower.factor + (upper.factor - lower.factor) * percentage
 }
 
-export const getDiscretionaryIncome = (agi, dependents = 1, state) => {
+export const getPovertyLevel = (dependents = 1, state) => {
   const fpl = FEDERAL_POVERY_LEVEL[state]
 
-  let level
   if (dependents < 9) {
-    level = fpl[dependents]
+    return fpl[dependents]
   } else {
-    level = fpl[8] + fpl[0] * (dependents - 8)
+    return fpl[8] + fpl[0] * (dependents - 8)
   }
-
-  return Math.max(0, agi - level * 1.5)
 }
+
+export const getDiscretionaryIncome = (agi, dependents = 1, state) =>
+  Math.max(0, agi - getPovertyLevel(dependents, state) * 1.5)
 
 export const partialFinancialHardship = (loan, income, rate = 0.15) => {
   const {payment} = fixedRateRepayment(loan, 10)
@@ -149,36 +149,33 @@ export const incomeBasedRepayment = (
 ) => {
   term = proRatedTerm(loan, term)
   const {balance, rate} = loan
-  const discrectionary = getDiscretionaryIncome(
-    income.agi,
-    income.dependents,
-    income.state
-  )
-
-  const payment = (discrectionary / MONTHS) * disRate
-  const maxPayment = getFixedPayment(balance, rate, 10)
   const breakdown = getIncomeBreakdown(
     loan,
-    payment,
-    maxPayment,
     balance,
     rate,
     term,
+    income,
+    disRate,
     INCOME_GROWTH_RATE
   )
 
-  return {payment, breakdown}
+  return {payment: breakdown[0].payment, breakdown}
 }
 
 export const getIncomeBreakdown = (
   loan,
-  initialPayment,
-  maxPayment,
   balance,
   interestRate,
   term,
+  income,
+  discretionaryRate,
   growthRate
 ) => {
+  let {agi, dependents, state} = income
+  let discrectionary = getDiscretionaryIncome(agi, dependents, state)
+  const initialPayment = (discrectionary / MONTHS) * discretionaryRate
+  const maxPayment = getFixedPayment(balance, interestRate, 10)
+
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
     let last = breakdown[i - 1]
@@ -196,7 +193,12 @@ export const getIncomeBreakdown = (
     let subsidizedPayment = 0
     // Increase payment every year.
     if (i > 0 && i % MONTHS === 0) {
-      payment = Math.min(payment * (1 + growthRate), maxPayment)
+      agi = agi * (1 + growthRate)
+      discrectionary = getDiscretionaryIncome(agi, dependents, state)
+      payment = Math.min(
+        (discrectionary / MONTHS) * discretionaryRate,
+        maxPayment
+      )
     }
     const interest = (last.endingBalance * interestRate) / MONTHS
     if (isInterestSubsidized(loan, i) && payment < interest) {
@@ -234,38 +236,35 @@ export const payeBasedRepayment = (
 ) => {
   term = proRatedTerm(loan, term)
   const {balance, rate} = loan
-  const discrectionary = getDiscretionaryIncome(
-    income.agi,
-    income.dependents,
-    income.state
-  )
-
-  const payment = (discrectionary / MONTHS) * disRate
-  const maxPayment = getFixedPayment(balance, rate, 10)
   const breakdown = getPayeBreakdown(
     loan,
-    payment,
-    maxPayment,
     balance,
     rate,
     term,
+    income,
+    disRate,
     INCOME_GROWTH_RATE,
     repay
   )
 
-  return {payment, breakdown}
+  return {payment: breakdown[0].payment, breakdown}
 }
 
 export const getPayeBreakdown = (
   loan,
-  initialPayment,
-  maxPayment,
   balance,
   interestRate,
   term,
+  income,
+  discretionaryRate,
   growthRate,
   repay
 ) => {
+  let {agi, dependents, state} = income
+  let discrectionary = getDiscretionaryIncome(agi, dependents, state)
+  const initialPayment = (discrectionary / MONTHS) * discretionaryRate
+  const maxPayment = getFixedPayment(balance, interestRate, 10)
+
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
     let last = breakdown[i - 1]
@@ -283,7 +282,12 @@ export const getPayeBreakdown = (
     let subsidizedPayment = 0
     // Increase payment every year.
     if (i > 0 && i % MONTHS === 0) {
-      payment = Math.min(payment * (1 + growthRate), maxPayment)
+      agi = agi * (1 + growthRate)
+      discrectionary = getDiscretionaryIncome(agi, dependents, state)
+      payment = Math.min(
+        (discrectionary / MONTHS) * discretionaryRate,
+        maxPayment
+      )
     }
     if (payment < 5) {
       payment = 0
@@ -320,46 +324,39 @@ export const getPayeBreakdown = (
   return breakdown
 }
 
-export const icrBasedRepayment = (loan, income, term = 25, disRate = 0.2) => {
+export const icrBasedRepayment = (loan, income, term = 25) => {
   term = proRatedTerm(loan, term)
   const {balance, rate} = loan
-  const discrectionary = getDiscretionaryIncome(
-    income.agi,
-    income.dependents,
-    income.state
-  )
-
-  const incomeFactor = getIncomePercentageFactor(
-    income.agi,
-    income.filing === 'SINGLE' ? 'single' : 'married'
-  )
-
-  const disPay = (discrectionary / MONTHS) * disRate
-  const fixedPay = getFixedPayment(balance, rate, 12) * incomeFactor
-
-  const payment = Math.min(disPay, fixedPay)
-  const maxPayment = Math.max(disPay, fixedPay)
 
   const breakdown = getIcrBreakdown(
-    payment,
-    maxPayment,
     balance,
     rate,
     term,
+    income,
     INCOME_GROWTH_RATE
   )
 
-  return {payment, breakdown}
+  return {payment: breakdown[0].payment, breakdown}
 }
 
 export const getIcrBreakdown = (
-  initialPayment,
-  maxPayment,
   balance,
   interestRate,
   term,
+  income,
   growthRate
 ) => {
+  const filing = income.filing === 'SINGLE' ? 'single' : 'married'
+  let {agi} = income
+  let discrectionary = agi - getPovertyLevel(income.dependents, income.state)
+  let incomeFactor = getIncomePercentageFactor(agi, filing)
+
+  const disPay = (discrectionary / MONTHS) * 0.2
+  const fixedPay = getFixedPayment(balance, interestRate, 12) * incomeFactor
+
+  const initialPayment = Math.min(disPay, fixedPay)
+  const maxPayment = Math.max(disPay, fixedPay)
+
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
     let last = breakdown[i - 1]
@@ -374,9 +371,11 @@ export const getIcrBreakdown = (
     }
 
     let payment = last.payment
-    // Increase payment every year.
+    // Increase payment every year based on income growth rate
     if (i > 0 && i % MONTHS === 0) {
-      payment = Math.min(payment * (1 + growthRate), maxPayment)
+      agi = agi * (1 + growthRate)
+      discrectionary = agi - getPovertyLevel(income.dependents, income.state)
+      payment = Math.min((discrectionary / MONTHS) * 0.2, maxPayment)
     }
     if (payment > 0 && payment < 5) {
       payment = 5

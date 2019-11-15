@@ -13,8 +13,8 @@ import {
 } from '@standardlabs/react-hooks'
 
 const Loan = ({onChange, ...props}) => {
-  const [balance, onBalanceChange] = useDeferredOnChange(65000, 150, asInt)
-  const [rate, onRateChange] = useDeferredOnChange(5.25, 150, asFloat)
+  const [balance, onBalanceChange] = useDeferredOnChange(20000, 150, asInt)
+  const [rate, onRateChange] = useDeferredOnChange(6, 150, asFloat)
   const [type, onTypeChange] = useOnChange('DIRECT_SUBSIDIZED')
   const [plan, onPlanChange] = useOnChange('')
   const [payments, onPaymentsChange] = useDeferredOnChange(0, 150, asInt)
