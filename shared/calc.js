@@ -9,6 +9,9 @@ export const MONTHS = 12
 // Annual income growth percentage
 export const INCOME_GROWTH_RATE = 0.05
 
+// Matches DOE's calculations
+export const INFLATION = 0.0236
+
 // 0 index is the amount for each dependent over 8 persons
 // Based on: https://aspe.hhs.gov/poverty-guidelines
 const FEDERAL_POVERY_LEVEL = {
@@ -18,42 +21,55 @@ const FEDERAL_POVERY_LEVEL = {
 }
 
 // https://www.federalregister.gov/documents/2019/05/22/2019-10623/annual-updates-to-the-income-contingent-repayment-icr-plan-formula-for-2019-william-d-ford-federal
-const INCOME_PERCENTAGE_FACTOR = {
-  single: [
-    {income: 12147, factor: 0.55},
-    {income: 16714, factor: 0.5779},
-    {income: 21506, factor: 0.6057},
-    {income: 26407, factor: 0.6623},
-    {income: 31087, factor: 0.7189},
-    {income: 36989, factor: 0.8033},
-    {income: 46460, factor: 0.8877},
-    {income: 58269, factor: 1.0},
-    {income: 70081, factor: 1.0},
-    {income: 84229, factor: 1.118},
-    {income: 107852, factor: 1.235},
-    {income: 152755, factor: 1.412},
-    {income: 175147, factor: 1.5},
-    {income: 311967, factor: 2.0}
-  ],
-  married: [
-    {income: 12147, factor: 0.5052},
-    {income: 19165, factor: 0.5668},
-    {income: 22839, factor: 0.5956},
-    {income: 29858, factor: 0.6779},
-    {income: 36989, factor: 0.7522},
-    {income: 46460, factor: 0.8761},
-    {income: 58268, factor: 1.0},
-    {income: 70081, factor: 1.0},
-    {income: 87800, factor: 1.094},
-    {income: 117322, factor: 1.25},
-    {income: 158657, factor: 1.406},
-    {income: 221889, factor: 1.5},
-    {income: 362583, factor: 2.0}
-  ]
+const INCOME_PERCENTAGE_FACTOR = year => {
+  const inflation = Math.pow(1 + INFLATION, year)
+
+  const factors = {
+    single: [
+      {income: 12147, factor: 0.55},
+      {income: 16714, factor: 0.5779},
+      {income: 21506, factor: 0.6057},
+      {income: 26407, factor: 0.6623},
+      {income: 31087, factor: 0.7189},
+      {income: 36989, factor: 0.8033},
+      {income: 46460, factor: 0.8877},
+      {income: 58269, factor: 1.0},
+      {income: 70081, factor: 1.0},
+      {income: 84229, factor: 1.118},
+      {income: 107852, factor: 1.235},
+      {income: 152755, factor: 1.412},
+      {income: 175147, factor: 1.5},
+      {income: 311967, factor: 2.0}
+    ],
+    married: [
+      {income: 12147, factor: 0.5052},
+      {income: 19165, factor: 0.5668},
+      {income: 22839, factor: 0.5956},
+      {income: 29858, factor: 0.6779},
+      {income: 36989, factor: 0.7522},
+      {income: 46460, factor: 0.8761},
+      {income: 58268, factor: 1.0},
+      {income: 70081, factor: 1.0},
+      {income: 87800, factor: 1.094},
+      {income: 117322, factor: 1.25},
+      {income: 158657, factor: 1.406},
+      {income: 221889, factor: 1.5},
+      {income: 362583, factor: 2.0}
+    ]
+  }
+
+  factors.single.forEach(f => (f.income = f.income * inflation))
+  factors.married.forEach(f => (f.income = f.income * inflation))
+
+  return factors
 }
 
-export const getIncomePercentageFactor = (income, status = 'single') => {
-  const list = INCOME_PERCENTAGE_FACTOR[status]
+export const getIncomePercentageFactor = (
+  income,
+  status = 'single',
+  year = 0
+) => {
+  const list = INCOME_PERCENTAGE_FACTOR(year)[status]
 
   let i
   for (i = 0; i < list.length - 1; i++) {
@@ -78,18 +94,16 @@ export const getIncomePercentageFactor = (income, status = 'single') => {
   return lower.factor + (upper.factor - lower.factor) * percentage
 }
 
-export const getPovertyLevel = (dependents = 1, state) => {
+export const getPovertyLevel = (dependents = 1, state, year = 0) => {
   const fpl = FEDERAL_POVERY_LEVEL[state]
+  const level =
+    dependents < 9 ? fpl[dependents] : fpl[8] + fpl[0] * (dependents - 8)
 
-  if (dependents < 9) {
-    return fpl[dependents]
-  } else {
-    return fpl[8] + fpl[0] * (dependents - 8)
-  }
+  return level * Math.pow(1 + INFLATION, year)
 }
 
-export const getDiscretionaryIncome = (agi, dependents = 1, state) =>
-  Math.max(0, agi - getPovertyLevel(dependents, state) * 1.5)
+export const getDiscretionaryIncome = (agi, dependents = 1, state, year) =>
+  Math.max(0, agi - getPovertyLevel(dependents, state, year, year) * 1.5)
 
 export const partialFinancialHardship = (loan, income, rate = 0.15) => {
   const {payment} = fixedRateRepayment(loan, 10)
@@ -194,7 +208,12 @@ export const getIncomeBreakdown = (
     // Increase payment every year.
     if (i > 0 && i % MONTHS === 0) {
       agi = agi * (1 + growthRate)
-      discrectionary = getDiscretionaryIncome(agi, dependents, state)
+      discrectionary = getDiscretionaryIncome(
+        agi,
+        dependents,
+        state,
+        i / MONTHS
+      )
       payment = Math.min(
         (discrectionary / MONTHS) * discretionaryRate,
         maxPayment
@@ -263,8 +282,9 @@ export const getPayeBreakdown = (
   let {agi, dependents, state} = income
   let discrectionary = getDiscretionaryIncome(agi, dependents, state)
   const initialPayment = (discrectionary / MONTHS) * discretionaryRate
-  // Supposedly repay has no maximum but stil doesn't match DOE's calculation
-  const maxPayment = getFixedPayment(balance, interestRate, 10)
+  const maxPayment = repay
+    ? Number.POSITIVE_INFINITY
+    : getFixedPayment(balance, interestRate, 10)
 
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
@@ -284,7 +304,12 @@ export const getPayeBreakdown = (
     // Increase payment every year.
     if (i > 0 && i % MONTHS === 0) {
       agi = agi * (1 + growthRate)
-      discrectionary = getDiscretionaryIncome(agi, dependents, state)
+      discrectionary = getDiscretionaryIncome(
+        agi,
+        dependents,
+        state,
+        i / MONTHS
+      )
       payment = Math.min(
         (discrectionary / MONTHS) * discretionaryRate,
         maxPayment
@@ -373,8 +398,9 @@ export const getIcrBreakdown = (
     // Increase payment every year based on income growth rate
     if (i > 0 && i % MONTHS === 0) {
       agi = agi * (1 + growthRate)
-      discrectionary = agi - getPovertyLevel(income.dependents, income.state)
-      incomeFactor = getIncomePercentageFactor(agi, filing)
+      discrectionary =
+        agi - getPovertyLevel(income.dependents, income.state, i / MONTHS)
+      incomeFactor = getIncomePercentageFactor(agi, filing, i / MONTHS)
       // Recalc fixed pay based on income factor
       payment = Math.min(
         (discrectionary / MONTHS) * 0.2,
