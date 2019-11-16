@@ -263,6 +263,7 @@ export const getPayeBreakdown = (
   let {agi, dependents, state} = income
   let discrectionary = getDiscretionaryIncome(agi, dependents, state)
   const initialPayment = (discrectionary / MONTHS) * discretionaryRate
+  // Supposedly repay has no maximum but stil doesn't match DOE's calculation
   const maxPayment = getFixedPayment(balance, interestRate, 10)
 
   const breakdown = []
@@ -349,13 +350,23 @@ export const getIcrBreakdown = (
   const filing = income.filing === 'SINGLE' ? 'single' : 'married'
   let {agi} = income
   let discrectionary = agi - getPovertyLevel(income.dependents, income.state)
-  let incomeFactor = getIncomePercentageFactor(agi, filing)
-
   const disPay = (discrectionary / MONTHS) * 0.2
+
+  const incomeFactor = getIncomePercentageFactor(agi, filing)
   const fixedPay = getFixedPayment(balance, interestRate, 12) * incomeFactor
+  // Average income factor over lifetime of term to determine potential
+  // max payment
+  const incomeFactorEnd = getIncomePercentageFactor(
+    agi * Math.pow(1 + growthRate, term),
+    filing
+  )
+  const avgFixedPay =
+    (getFixedPayment(balance, interestRate, 12) *
+      (incomeFactor + incomeFactorEnd)) /
+    2
 
   const initialPayment = Math.min(disPay, fixedPay)
-  const maxPayment = Math.max(disPay, fixedPay)
+  const maxPayment = Math.max(disPay, avgFixedPay)
 
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
