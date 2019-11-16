@@ -166,7 +166,7 @@ const PaymentSummary = props => {
           width: 175px;
           position: relative;
           padding-right: 0;
-          padding-left: ${((first.payment - range.min) / range.delta) * 150}px;
+          padding-left: ${((first.payment - range.min) / range.delta) * 175}px;
         }
 
         .payment .gutter {
