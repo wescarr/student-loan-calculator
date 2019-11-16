@@ -169,9 +169,9 @@ export const RepaymentPlans = {
   },
   REVISED_PAY_AS_YOU_EARN: (loan, income) => {
     const eligible = partialFinancialHardship(loan, income, 0.1)
-    const {payment, breakdown} = payeBasedRepayment(loan, income, 20, 0.1, true)
+    const {payment, breakdown} = payeBasedRepayment(loan, income, 25, 0.1, true)
     const forgiven =
-      breakdown.length === 20 * MONTHS
+      breakdown.length === 25 * MONTHS
         ? breakdown[breakdown.length - 1].balance
         : 0
 
