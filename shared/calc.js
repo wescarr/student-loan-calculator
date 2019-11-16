@@ -56,7 +56,7 @@ export const getIncomePercentageFactor = (income, status = 'single') => {
   const list = INCOME_PERCENTAGE_FACTOR[status]
 
   let i
-  for (i = 0; i < list.length; i++) {
+  for (i = 0; i < list.length - 1; i++) {
     if (list[i].income >= income) {
       if (list[i].income > income && i > 0) {
         i--
@@ -350,23 +350,11 @@ export const getIcrBreakdown = (
   const filing = income.filing === 'SINGLE' ? 'single' : 'married'
   let {agi} = income
   let discrectionary = agi - getPovertyLevel(income.dependents, income.state)
+  let incomeFactor = getIncomePercentageFactor(agi, filing)
+
   const disPay = (discrectionary / MONTHS) * 0.2
-
-  const incomeFactor = getIncomePercentageFactor(agi, filing)
-  const fixedPay = getFixedPayment(balance, interestRate, 12) * incomeFactor
-  // Average income factor over lifetime of term to determine potential
-  // max payment
-  const incomeFactorEnd = getIncomePercentageFactor(
-    agi * Math.pow(1 + growthRate, term),
-    filing
-  )
-  const avgFixedPay =
-    (getFixedPayment(balance, interestRate, 12) *
-      (incomeFactor + incomeFactorEnd)) /
-    2
-
-  const initialPayment = Math.min(disPay, fixedPay)
-  const maxPayment = Math.max(disPay, avgFixedPay)
+  const fixedPay = getFixedPayment(balance, interestRate, 12)
+  const initialPayment = Math.min(disPay, fixedPay * incomeFactor)
 
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
@@ -386,7 +374,12 @@ export const getIcrBreakdown = (
     if (i > 0 && i % MONTHS === 0) {
       agi = agi * (1 + growthRate)
       discrectionary = agi - getPovertyLevel(income.dependents, income.state)
-      payment = Math.min((discrectionary / MONTHS) * 0.2, maxPayment)
+      incomeFactor = getIncomePercentageFactor(agi, filing)
+      // Recalc fixed pay based on income factor
+      payment = Math.min(
+        (discrectionary / MONTHS) * 0.2,
+        fixedPay * incomeFactor
+      )
     }
     if (payment > 0 && payment < 5) {
       payment = 5
