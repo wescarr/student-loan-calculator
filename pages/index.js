@@ -14,6 +14,7 @@ import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import chartImg from '../images/chart-area.svg'
 import dynamic from 'next/dynamic'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
+import {States} from '../shared/calc'
 
 import {
   classNames,
@@ -162,11 +163,9 @@ const PaymentSummary = props => {
         }
 
         .payment {
-          width: 150px;
+          width: 175px;
           position: relative;
-        }
-
-        .payment {
+          padding-right: 0;
           padding-left: ${((first.payment - range.min) / range.delta) * 150}px;
         }
 
@@ -265,8 +264,19 @@ TableHeading.propTypes = {
 }
 
 const Home = () => {
-  const [loan, setLoan] = useState()
-  const [income, setIncome] = useState() // eslint-disable-line no-unused-vars
+  const [loan, setLoan] = useState({
+    balance: 20000,
+    rate: 0.06,
+    type: 'DIRECT_SUBSIDIZED',
+    plan: '',
+    payments: 0
+  })
+  const [income, setIncome] = useState({
+    agi: 20000,
+    dependents: 1,
+    state: States.LOWER_48,
+    filing: 'SINGLE'
+  })
   const [editIncome, setEditIncome] = useState(false)
   const [chartType, setChartType] = useState('endingBalance')
   const [selectedPayments, setSelectedPayment] = useState([])
@@ -396,9 +406,9 @@ const Home = () => {
               </Nav>
               <div className="px-3 pt-3 pb-1">
                 {editIncome ? (
-                  <IncomeForm onChange={setIncome} />
+                  <IncomeForm income={income} onChange={setIncome} />
                 ) : (
-                  <Loan onChange={setLoan} />
+                  <Loan loan={loan} onChange={setLoan} />
                 )}
               </div>
               {!editIncome && !income && (

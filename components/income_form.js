@@ -13,11 +13,11 @@ import {
   useOnChange
 } from '@standardlabs/react-hooks'
 
-const IncomeForm = ({onChange, ...props}) => {
-  const [agi, onChangeAgi] = useDeferredOnChange(20000, 150, asInt)
-  const [dependents, onChangeDependants] = useOnChange(1, asInt)
-  const [state, onChangeState] = useOnChange(States.LOWER_48)
-  const [filing, onChangeFiling] = useOnChange('SINGLE')
+const IncomeForm = ({onChange, income, ...props}) => {
+  const [agi, onChangeAgi] = useDeferredOnChange(income.agi, 150, asInt)
+  const [dependents, onChangeDependants] = useOnChange(income.dependents, asInt)
+  const [state, onChangeState] = useOnChange(income.state)
+  const [filing, onChangeFiling] = useOnChange(income.filing)
 
   useEffect(() => {
     if (agi.deferred && dependents && state && filing) {
@@ -88,7 +88,8 @@ const IncomeForm = ({onChange, ...props}) => {
 }
 
 IncomeForm.propTypes = {
-  onChange: PropTypes.func
+  onChange: PropTypes.func,
+  income: PropTypes.object
 }
 
 export default IncomeForm
