@@ -32,14 +32,11 @@ const PaymentSummary = props => {
         <>
           <td>{Math.round(breakdown.length / 12)} years</td>
           <td className="payment">
-            {first.payment === last.payment ? (
-              <span>{currency(first.payment)}</span>
-            ) : (
-              <>
-                <span>{currency(first.payment)}</span> -{' '}
-                <span>{currency(last.payment)}</span>
-              </>
-            )}
+            <span className="label">
+              {first.payment === last.payment
+                ? currency(first.payment)
+                : `${currency(first.payment)} - ${currency(last.payment)}`}
+            </span>
             <span className="gutter rounded">
               <span className="range rounded bg-info" />
             </span>
@@ -95,10 +92,18 @@ const PaymentSummary = props => {
           transition: all 0.5s ease-out;
         }
 
+        .label {
+          position: relative;
+          transition: all 0.5s ease-out;
+        }
+
         .payment {
           width: 175px;
           position: relative;
-          padding-left: ${((first.payment - range.min) / range.delta) * 175}px;
+        }
+
+        .payment .label {
+          left: ${((first.payment - range.min) / range.delta) * 175 - 12}px;
         }
 
         .payment .range {
@@ -112,7 +117,6 @@ const PaymentSummary = props => {
         }
 
         .compare .label {
-          position: relative;
           right: ${Math.min(
             ((compareRange.max -
               (compare === 'forgiven' ? forgiven : last[compare])) /
@@ -120,7 +124,6 @@ const PaymentSummary = props => {
               175,
             100
           )}px;
-          transition: all 0.5s ease-out;
         }
 
         .compare .gutter {
