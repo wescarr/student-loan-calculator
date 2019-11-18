@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import {classNames, currency} from '../shared/helpers'
+import {classNames, currency, simplifyCurrency} from '../shared/helpers'
 
 const PaymentSummary = props => {
   const {
@@ -8,8 +8,9 @@ const PaymentSummary = props => {
     label,
     eligible,
     breakdown,
-    forgiven,
-    income,
+    forgiven = 0,
+    compare,
+    compareRange,
     selected,
     range,
     ...rest
@@ -21,7 +22,7 @@ const PaymentSummary = props => {
     <tr
       className={classNames({'text-muted': !eligible, selected, eligible})}
       {...rest}>
-      <td>
+      <td className="icon">
         {eligible && (
           <div className="border border-white rounded-circle d-inline-block" />
         )}
@@ -43,11 +44,16 @@ const PaymentSummary = props => {
               <span className="range rounded bg-info" />
             </span>
           </td>
-          <td className="text-right">{currency(last.totalInterest)}</td>
-          <td className="text-right">{currency(last.totalPayment)}</td>
-          {income ? (
-            <td className="text-right">{currency(forgiven || 0)}</td>
-          ) : null}
+          <td className="compare text-right">
+            <span className="label">
+              {compare === 'forgiven'
+                ? simplifyCurrency(forgiven || 0)
+                : simplifyCurrency(last[compare])}
+            </span>
+            <span className="gutter rounded">
+              <span className="range rounded bg-info" />
+            </span>
+          </td>
         </>
       ) : (
         <td colSpan="5">Your loan is not elgible for this repayment plan</td>
@@ -68,29 +74,65 @@ const PaymentSummary = props => {
           cursor: pointer;
         }
 
-        .payment {
-          width: 175px;
-          position: relative;
-          padding-right: 0;
-          padding-left: ${((first.payment - range.min) / range.delta) * 175}px;
+        .icon {
+          width: 25px;
         }
 
-        .payment .gutter {
+        .gutter {
           position: absolute;
           bottom: 8px;
-          height: 4px;
+          height: 5px;
           left: 0;
           right: 0;
           background: #ccc;
         }
 
-        .payment .range {
+        .range {
           display: block;
+          min-width: 5px;
+          height: 5px;
+          background: red;
+          transition: all 0.5s ease-out;
+        }
+
+        .payment {
+          width: 175px;
+          position: relative;
+          padding-left: ${((first.payment - range.min) / range.delta) * 175}px;
+        }
+
+        .payment .range {
           margin-left: ${((first.payment - range.min) / range.delta) * 100}%;
           width: ${((last.payment - first.payment) / range.delta) * 100}%;
-          min-width: 4px;
-          height: 4px;
-          background: red;
+        }
+
+        .compare {
+          width: 175px;
+          position: relative;
+        }
+
+        .compare .label {
+          position: relative;
+          right: ${Math.min(
+            ((compareRange.max -
+              (compare === 'forgiven' ? forgiven : last[compare])) /
+              compareRange.delta) *
+              175,
+            100
+          )}px;
+          transition: all 0.5s ease-out;
+        }
+
+        .compare .gutter {
+          left: 12px;
+          right: 12px;
+        }
+
+        .compare .range {
+          width: ${(((compare === 'forgiven' ? forgiven : last[compare]) -
+            compareRange.min) /
+            compareRange.delta) *
+            100}%;
         }
       `}</style>
     </tr>
@@ -104,8 +146,9 @@ PaymentSummary.propTypes = {
   eligible: PropTypes.bool.isRequired,
   forgiven: PropTypes.number,
   selected: PropTypes.bool,
-  income: PropTypes.object,
-  range: PropTypes.object
+  compare: PropTypes.string,
+  range: PropTypes.object,
+  compareRange: PropTypes.object
 }
 
 export default PaymentSummary

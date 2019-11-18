@@ -30,7 +30,7 @@ const IncomeForm = ({onChange, income, ...props}) => {
       <Form.Row>
         <Col>
           <Form.Group>
-            <Form.Label>Adjusted Gross Income</Form.Label>
+            <Form.Label>Adjusted gross income</Form.Label>
             <InputGroup>
               <InputGroup.Prepend>
                 <InputGroup.Text>$</InputGroup.Text>
@@ -60,7 +60,7 @@ const IncomeForm = ({onChange, income, ...props}) => {
       <Form.Row>
         <Col>
           <Form.Group>
-            <Form.Label>Family Size</Form.Label>
+            <Form.Label>Family size</Form.Label>
             <Select onChange={onChangeDependants} value={dependents}>
               {new Array(15).fill(1).map((value, index) => (
                 <option key={index} value={index + 1}>
@@ -72,7 +72,7 @@ const IncomeForm = ({onChange, income, ...props}) => {
         </Col>
         <Col>
           <Form.Group>
-            <Form.Label>Tax Filing Status</Form.Label>
+            <Form.Label>Tax filing status</Form.Label>
             <Select onChange={onChangeFiling} value={filing}>
               {Object.entries(TaxFilingStatus).map(([key, value]) => (
                 <option key={key} value={key}>

@@ -3,7 +3,10 @@ import PaymentSummary from './payment_summary'
 import PropTypes from 'prop-types'
 import React, {useCallback, useState} from 'react'
 import Table from 'react-bootstrap/Table'
+import ToggleButton from 'react-bootstrap/ToggleButton'
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import chartImg from '../images/chart-area.svg'
+import settingsImg from '../images/sliders-v-square.svg'
 
 const getPaymentsRange = repayments => {
   const first = repayments.map(r => r.breakdown[0].payment)
@@ -12,6 +15,25 @@ const getPaymentsRange = repayments => {
   const range = {
     min: Math.min(...first),
     max: Math.max(...last)
+  }
+
+  range.delta = range.max - range.min
+
+  return range
+}
+
+const getCompareRange = (repayments, compare) => {
+  const values = repayments
+    .map(r =>
+      compare === 'forgiven'
+        ? r.forgiven || 0
+        : r.breakdown[r.breakdown.length - 1][compare]
+    )
+    .sort((a, b) => a - b)
+
+  const range = {
+    min: values[0],
+    max: values[values.length - 1]
   }
 
   range.delta = range.max - range.min
@@ -80,9 +102,11 @@ TableHeading.propTypes = {
   onClick: PropTypes.func
 }
 
-const PaymentTable = ({payments, income, selected, onSelect}) => {
+const PaymentTable = ({payments, selected, onSelect}) => {
   const [sort, setSort] = useState()
+  const [compare, setCompare] = useState('totalPayment')
   const range = getPaymentsRange(payments)
+  const compareRange = getCompareRange(payments, compare)
 
   const onSortClick = useCallback(
     key =>
@@ -94,70 +118,84 @@ const PaymentTable = ({payments, income, selected, onSelect}) => {
   )
 
   return (
-    <Table borderless striped>
-      <thead>
-        <tr>
-          <th>
-            <img src={chartImg} />
-          </th>
-          <th>Repayment plan</th>
-          <TableHeading
-            label="Term"
-            onClick={onSortClick}
-            id="term"
-            sort={sort}
-          />
-          <TableHeading
-            label="Per month"
-            onClick={onSortClick}
-            id="payment"
-            sort={sort}
-          />
-          <TableHeading
-            className="text-right"
-            label="Total interest"
-            onClick={onSortClick}
-            id="totalInterest"
-            sort={sort}
-          />
-          <TableHeading
-            className="text-right"
-            label="Total paid"
-            onClick={onSortClick}
-            id="totalPayment"
-            sort={sort}
-          />
-          {income ? (
+    <>
+      <div>
+        <ToggleButtonGroup
+          className="float-right"
+          type="radio"
+          name="compare_type"
+          value={compare}
+          onChange={setCompare}>
+          <ToggleButton value={'totalPayment'} variant="secondary">
+            Total paid
+          </ToggleButton>
+          <ToggleButton value={'totalInterest'} variant="secondary">
+            Total interest
+          </ToggleButton>
+          <ToggleButton value={'forgiven'} variant="secondary">
+            Forgiven
+          </ToggleButton>
+          <ToggleButton variant="secondary">
+            <img src={settingsImg} width="19px" />
+          </ToggleButton>
+        </ToggleButtonGroup>
+        <p className="lead">Compare repayment plans</p>
+      </div>
+      <Table borderless striped>
+        <thead>
+          <tr>
+            <th>
+              <img src={chartImg} width="19px" />
+            </th>
+            <th>Plan</th>
             <TableHeading
-              className="text-right"
-              label="Forgiven"
+              label="Term"
               onClick={onSortClick}
-              id="forgiven"
+              id="term"
               sort={sort}
             />
-          ) : null}
-        </tr>
-      </thead>
-      <tbody>
-        {sortRepayments(payments, sort).map(r => (
-          <PaymentSummary
-            {...r}
-            income={income}
-            range={range}
-            key={r.label}
-            selected={selected.includes(r.label)}
-            onClick={() => onSelect(r.label)}
-          />
-        ))}
-      </tbody>
-    </Table>
+            <TableHeading
+              label="Per month"
+              onClick={onSortClick}
+              id="payment"
+              sort={sort}
+            />
+            <TableHeading
+              className="text-right"
+              label={
+                {
+                  totalInterest: 'Total interest',
+                  totalPayment: 'Total paid',
+                  forgiven: 'Forgiven'
+                }[compare]
+              }
+              onClick={onSortClick}
+              id={compare}
+              sort={sort}
+            />
+          </tr>
+        </thead>
+        <tbody>
+          {sortRepayments(payments, sort).map(r => (
+            <PaymentSummary
+              {...r}
+              range={range}
+              compareRange={compareRange}
+              key={r.label}
+              compare={compare}
+              selected={selected.includes(r.label)}
+              onClick={() => onSelect(r.label)}
+            />
+          ))}
+        </tbody>
+      </Table>
+    </>
   )
 }
 
 PaymentTable.propTypes = {
   payments: PropTypes.array.isRequired,
   selected: PropTypes.array,
-  income: PropTypes.object,
   onSelect: PropTypes.func
 }
 
