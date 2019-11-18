@@ -379,7 +379,7 @@ export const getIcrBreakdown = (
 
   const disPay = (discrectionary / MONTHS) * 0.2
   const fixedPay = getFixedPayment(balance, interestRate, 12)
-  const initialPayment = Math.min(disPay, fixedPay * incomeFactor)
+  const initialPayment = Math.max(0, Math.min(disPay, fixedPay * incomeFactor))
 
   const breakdown = []
   for (let i = 0; i < term * MONTHS; i++) {
@@ -402,9 +402,9 @@ export const getIcrBreakdown = (
         agi - getPovertyLevel(income.dependents, income.state, i / MONTHS)
       incomeFactor = getIncomePercentageFactor(agi, filing, i / MONTHS)
       // Recalc fixed pay based on income factor
-      payment = Math.min(
-        (discrectionary / MONTHS) * 0.2,
-        fixedPay * incomeFactor
+      payment = Math.max(
+        0,
+        Math.min((discrectionary / MONTHS) * 0.2, fixedPay * incomeFactor)
       )
     }
     if (payment > 0 && payment < 5) {
