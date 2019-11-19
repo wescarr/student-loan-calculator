@@ -125,7 +125,7 @@ const PaymentTable = ({payments, selected, onSelect}) => {
           type="radio"
           name="compare_type"
           value={compare}
-          onChange={setCompare}>
+          onChange={val => val !== 'settings' && setCompare(val)}>
           <ToggleButton value={'totalPayment'} variant="secondary">
             Total paid
           </ToggleButton>
@@ -135,7 +135,7 @@ const PaymentTable = ({payments, selected, onSelect}) => {
           <ToggleButton value={'forgiven'} variant="secondary">
             Forgiven
           </ToggleButton>
-          <ToggleButton variant="secondary">
+          <ToggleButton value={'settings'} variant="secondary">
             <img src={settingsImg} width="19px" />
           </ToggleButton>
         </ToggleButtonGroup>

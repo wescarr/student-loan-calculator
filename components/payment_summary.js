@@ -38,7 +38,6 @@ const PaymentSummary = props => {
           </td>
           <td className="payment px-0">
             <span className="gutter rounded">
-              <span className="prefix rounded bg-info progress-bar-striped" />
               <span className="range rounded bg-info" />
             </span>
           </td>
@@ -84,8 +83,7 @@ const PaymentSummary = props => {
           background: #ccc;
         }
 
-        .range,
-        .prefix {
+        .range {
           display: block;
           position: absolute;
           min-width: 8px;
@@ -96,13 +94,6 @@ const PaymentSummary = props => {
         .payment .range {
           left: ${(first.payment / range.max) * 100}%;
           width: ${((last.payment - first.payment) / range.max) * 100}%;
-        }
-
-        .payment .prefix {
-          opacity: 0.3;
-          width: ${last.payment === first.payment
-            ? `calc(${(last.payment / range.max) * 100}% + 5px)`
-            : `${(last.payment / range.max) * 100}%`};
         }
 
         .compare .range {
