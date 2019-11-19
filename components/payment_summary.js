@@ -22,7 +22,7 @@ const PaymentSummary = props => {
     <tr
       className={classNames({'text-muted': !eligible, selected, eligible})}
       {...rest}>
-      <td className="icon">
+      <td className="icon text-center">
         {eligible && (
           <div className="border border-white rounded-circle d-inline-block" />
         )}
@@ -31,22 +31,23 @@ const PaymentSummary = props => {
       {eligible ? (
         <>
           <td>{Math.round(breakdown.length / 12)} years</td>
-          <td className="payment">
-            <span className="label">
-              {first.payment === last.payment
-                ? currency(first.payment)
-                : `${currency(first.payment)} - ${currency(last.payment)}`}
-            </span>
+          <td className="text-right">
+            {first.payment === last.payment
+              ? currency(first.payment)
+              : `${currency(first.payment)} - ${currency(last.payment)}`}
+          </td>
+          <td className="payment px-0">
             <span className="gutter rounded">
+              <span className="prefix rounded bg-info progress-bar-striped" />
               <span className="range rounded bg-info" />
             </span>
           </td>
-          <td className="compare text-right">
-            <span className="label">
-              {compare === 'forgiven'
-                ? simplifyCurrency(forgiven || 0)
-                : simplifyCurrency(last[compare])}
-            </span>
+          <td className="text-right">
+            {compare === 'forgiven'
+              ? simplifyCurrency(forgiven || 0)
+              : simplifyCurrency(last[compare])}
+          </td>
+          <td className="compare pl-0">
             <span className="gutter rounded">
               <span className="range rounded bg-info" />
             </span>
@@ -76,65 +77,37 @@ const PaymentSummary = props => {
         }
 
         .gutter {
-          position: absolute;
-          bottom: 8px;
-          height: 5px;
-          left: 0;
-          right: 0;
+          position: relative;
+          display: block;
+          width: 100px;
+          height: 8px;
           background: #ccc;
         }
 
-        .range {
+        .range,
+        .prefix {
           display: block;
-          min-width: 5px;
-          height: 5px;
-          background: red;
+          position: absolute;
+          min-width: 8px;
+          height: 8px;
           transition: all 0.5s ease-out;
-        }
-
-        .label {
-          position: relative;
-          transition: all 0.5s ease-out;
-        }
-
-        .payment {
-          width: 175px;
-          position: relative;
-        }
-
-        .payment .label {
-          left: ${((first.payment - range.min) / range.delta) * 175 - 12}px;
         }
 
         .payment .range {
-          margin-left: ${((first.payment - range.min) / range.delta) * 100}%;
-          width: ${((last.payment - first.payment) / range.delta) * 100}%;
+          left: ${(first.payment / range.max) * 100}%;
+          width: ${((last.payment - first.payment) / range.max) * 100}%;
         }
 
-        .compare {
-          width: 175px;
-          position: relative;
-        }
-
-        .compare .label {
-          right: ${Math.min(
-            ((compareRange.max -
-              (compare === 'forgiven' ? forgiven : last[compare])) /
-              compareRange.delta) *
-              175,
-            100
-          )}px;
-        }
-
-        .compare .gutter {
-          left: 12px;
-          right: 12px;
+        .payment .prefix {
+          opacity: 0.3;
+          width: ${last.payment === first.payment
+            ? `calc(${(last.payment / range.max) * 100}% + 5px)`
+            : `${(last.payment / range.max) * 100}%`};
         }
 
         .compare .range {
-          width: ${(((compare === 'forgiven' ? forgiven : last[compare]) -
-            compareRange.min) /
-            compareRange.delta) *
+          width: ${((compare === 'forgiven' ? forgiven : last[compare]) /
+            compareRange.max) *
             100}%;
         }
       `}</style>

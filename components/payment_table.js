@@ -159,9 +159,9 @@ const PaymentTable = ({payments, selected, onSelect}) => {
               onClick={onSortClick}
               id="payment"
               sort={sort}
+              colSpan={2}
             />
             <TableHeading
-              className="text-right"
               label={
                 {
                   totalInterest: 'Total interest',
@@ -172,6 +172,7 @@ const PaymentTable = ({payments, selected, onSelect}) => {
               onClick={onSortClick}
               id={compare}
               sort={sort}
+              colSpan={2}
             />
           </tr>
         </thead>
