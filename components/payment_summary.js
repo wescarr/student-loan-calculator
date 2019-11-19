@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import {classNames, currency} from '../shared/helpers'
+import {classNames, currency, simplifyCurrency} from '../shared/helpers'
 
 const PaymentSummary = props => {
   const {
@@ -8,8 +8,9 @@ const PaymentSummary = props => {
     label,
     eligible,
     breakdown,
-    forgiven,
-    income,
+    forgiven = 0,
+    compare,
+    compareRange,
     selected,
     range,
     ...rest
@@ -21,7 +22,7 @@ const PaymentSummary = props => {
     <tr
       className={classNames({'text-muted': !eligible, selected, eligible})}
       {...rest}>
-      <td>
+      <td className="icon text-center">
         {eligible && (
           <div className="border border-white rounded-circle d-inline-block" />
         )}
@@ -30,24 +31,27 @@ const PaymentSummary = props => {
       {eligible ? (
         <>
           <td>{Math.round(breakdown.length / 12)} years</td>
-          <td className="payment">
-            {first.payment === last.payment ? (
-              <span>{currency(first.payment)}</span>
-            ) : (
-              <>
-                <span>{currency(first.payment)}</span> -{' '}
-                <span>{currency(last.payment)}</span>
-              </>
-            )}
+          <td className="text-right">
+            {first.payment === last.payment
+              ? currency(first.payment)
+              : `${currency(first.payment)} - ${currency(last.payment)}`}
+          </td>
+          <td className="payment px-0">
+            <span className="gutter rounded">
+              <span className="prefix rounded bg-info progress-bar-striped" />
+              <span className="range rounded bg-info" />
+            </span>
+          </td>
+          <td className="text-right">
+            {compare === 'forgiven'
+              ? simplifyCurrency(forgiven || 0)
+              : simplifyCurrency(last[compare])}
+          </td>
+          <td className="compare pl-0">
             <span className="gutter rounded">
               <span className="range rounded bg-info" />
             </span>
           </td>
-          <td className="text-right">{currency(last.totalInterest)}</td>
-          <td className="text-right">{currency(last.totalPayment)}</td>
-          {income ? (
-            <td className="text-right">{currency(forgiven || 0)}</td>
-          ) : null}
         </>
       ) : (
         <td colSpan="5">Your loan is not elgible for this repayment plan</td>
@@ -68,29 +72,43 @@ const PaymentSummary = props => {
           cursor: pointer;
         }
 
-        .payment {
-          width: 175px;
-          position: relative;
-          padding-right: 0;
-          padding-left: ${((first.payment - range.min) / range.delta) * 175}px;
+        .icon {
+          width: 25px;
         }
 
-        .payment .gutter {
-          position: absolute;
-          bottom: 8px;
-          height: 4px;
-          left: 0;
-          right: 0;
+        .gutter {
+          position: relative;
+          display: block;
+          width: 100px;
+          height: 8px;
           background: #ccc;
         }
 
-        .payment .range {
+        .range,
+        .prefix {
           display: block;
-          margin-left: ${((first.payment - range.min) / range.delta) * 100}%;
-          width: ${((last.payment - first.payment) / range.delta) * 100}%;
-          min-width: 4px;
-          height: 4px;
-          background: red;
+          position: absolute;
+          min-width: 8px;
+          height: 8px;
+          transition: all 0.5s ease-out;
+        }
+
+        .payment .range {
+          left: ${(first.payment / range.max) * 100}%;
+          width: ${((last.payment - first.payment) / range.max) * 100}%;
+        }
+
+        .payment .prefix {
+          opacity: 0.3;
+          width: ${last.payment === first.payment
+            ? `calc(${(last.payment / range.max) * 100}% + 5px)`
+            : `${(last.payment / range.max) * 100}%`};
+        }
+
+        .compare .range {
+          width: ${((compare === 'forgiven' ? forgiven : last[compare]) /
+            compareRange.max) *
+            100}%;
         }
       `}</style>
     </tr>
@@ -104,8 +122,9 @@ PaymentSummary.propTypes = {
   eligible: PropTypes.bool.isRequired,
   forgiven: PropTypes.number,
   selected: PropTypes.bool,
-  income: PropTypes.object,
-  range: PropTypes.object
+  compare: PropTypes.string,
+  range: PropTypes.object,
+  compareRange: PropTypes.object
 }
 
 export default PaymentSummary

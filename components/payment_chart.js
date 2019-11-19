@@ -83,28 +83,28 @@ const getChartData = (repayments, attr) => {
 }
 
 const Chart = ({payments}) => {
-  const [compare, setChartType] = useState('endingBalance')
+  const [compare, setCompare] = useState('endingBalance')
   const data = getChartData(payments, compare)
 
   return (
     <>
-      <div className="mt-4 mb-2 text-center">
+      <div className="mt-4 mb-2 text-right">
         <ToggleButtonGroup
           type="radio"
           name="chart_type"
           value={compare}
-          onChange={setChartType}>
+          onChange={setCompare}>
           <ToggleButton value={'payment'} variant="secondary">
-            Monthly Payment
+            Monthly payment
           </ToggleButton>
           <ToggleButton value={'endingBalance'} variant="secondary">
             Balance
           </ToggleButton>
           <ToggleButton value={'totalPayment'} variant="secondary">
-            Total Paid
+            Total paid
           </ToggleButton>
           <ToggleButton value={'totalInterest'} variant="secondary">
-            Total Interest
+            Total interest
           </ToggleButton>
         </ToggleButtonGroup>
       </div>

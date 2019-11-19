@@ -129,12 +129,11 @@ const Home = () => {
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col key="repayments" md={income ? 10 : 8} className="repayments">
+          <Col key="repayments" md={9} className="repayments">
             {loan && !isUnkownLoan && (
               <>
                 <PaymentTable
                   payments={repayments}
-                  income={income}
                   selected={selectedPayments}
                   onSelect={onPaymentSelect}
                 />

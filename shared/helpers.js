@@ -2,11 +2,13 @@ export const currency = (num, round = true) =>
   (round ? Math.round(num) : num).toLocaleString(undefined, {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: 0
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 1
   })
 
 export const simplifyCurrency = amount => {
-  let remaining = amount, index = 0
+  let remaining = amount,
+    index = 0
   while (remaining >= 1000) {
     remaining /= 1000
     index++
