@@ -126,7 +126,7 @@ const PaymentTable = ({payments, selected, onSelect, rates, onRatesChange}) => {
       income: incomeGrowth.deferred / 100,
       inflation: inflationRate.deferred / 100
     })
-  }, [incomeGrowth.deferred, inflationRate.deferred])
+  }, [incomeGrowth.deferred, inflationRate.deferred, onRatesChange])
 
   const range = getPaymentsRange(payments)
   const compareRange = getCompareRange(payments, compare)

@@ -6,7 +6,7 @@ import IncomeForm from '../components/income_form'
 import Loan from '../components/loan'
 import Nav from 'react-bootstrap/Nav'
 import PaymentTable from '../components/payment_table'
-import React, {useEffect, useReducer, useState} from 'react'
+import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {States} from '../shared/calc'
@@ -45,6 +45,7 @@ const Home = () => {
     filing: 'SINGLE',
     rates: {income: 0.05, inflation: 0.0236}
   })
+  const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
 
   // We intentially only rely on `loan` as a dependency to set the default
   // selected payments when the loan value initially changes.
@@ -142,7 +143,7 @@ const Home = () => {
                   selected={selectedPayments}
                   onSelect={onPaymentSelect}
                   rates={income.rates}
-                  onRatesChange={rates => setIncome({rates})}
+                  onRatesChange={onRatesChange}
                 />
                 {selectedPayments.length > 0 && (
                   <Chart
