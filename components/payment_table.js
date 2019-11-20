@@ -1,12 +1,17 @@
+import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import Caret from '../components/caret'
+import Dropdown from 'react-bootstrap/Dropdown'
+import Form from 'react-bootstrap/Form'
+import InputGroup from 'react-bootstrap/InputGroup'
 import PaymentSummary from './payment_summary'
 import PropTypes from 'prop-types'
-import React, {useCallback, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import Table from 'react-bootstrap/Table'
-import ToggleButton from 'react-bootstrap/ToggleButton'
-import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
 import chartImg from '../images/chart-area.svg'
+import css from 'styled-jsx/css'
+import ellipsisImg from '../images/ellipsis-h.svg'
 import settingsImg from '../images/sliders-v-square.svg'
+import {asFloat, useDeferredOnChange} from '@standardlabs/react-hooks'
 
 const getPaymentsRange = repayments => {
   const first = repayments.map(r => r.breakdown[0].payment)
@@ -87,7 +92,7 @@ const TableHeading = props => {
       <span>{label}</span>
       {sort && sort.key === id ? <Caret dir={sort.dir} /> : null}
       <style jsx>{`
-        span {
+        th span {
           cursor: pointer;
         }
       `}</style>
@@ -102,9 +107,27 @@ TableHeading.propTypes = {
   onClick: PropTypes.func
 }
 
-const PaymentTable = ({payments, selected, onSelect}) => {
+const PaymentTable = ({payments, selected, onSelect, rates, onRatesChange}) => {
   const [sort, setSort] = useState()
   const [compare, setCompare] = useState('totalPayment')
+  const [incomeGrowth, setIncomeGrowth] = useDeferredOnChange(
+    rates.income * 100,
+    150,
+    asFloat
+  )
+  const [inflationRate, setInflationRate] = useDeferredOnChange(
+    rates.inflation * 100,
+    150,
+    asFloat
+  )
+
+  useEffect(() => {
+    onRatesChange({
+      income: incomeGrowth.deferred / 100,
+      inflation: inflationRate.deferred / 100
+    })
+  }, [incomeGrowth.deferred, inflationRate.deferred])
+
   const range = getPaymentsRange(payments)
   const compareRange = getCompareRange(payments, compare)
 
@@ -117,32 +140,21 @@ const PaymentTable = ({payments, selected, onSelect}) => {
     [sort]
   )
 
+  const {className, styles} = css.resolve`
+    .btn-group {
+      right: 16px;
+      top: 4px;
+    }
+
+    .btn-group .dropdown-toggle::after {
+      display: none;
+    }
+  `
+
   return (
-    <>
-      <div>
-        <ToggleButtonGroup
-          className="float-right"
-          type="radio"
-          name="compare_type"
-          value={compare}
-          onChange={val => val !== 'settings' && setCompare(val)}>
-          <ToggleButton value={'totalPayment'} variant="secondary">
-            Total paid
-          </ToggleButton>
-          <ToggleButton value={'totalInterest'} variant="secondary">
-            Total interest
-          </ToggleButton>
-          <ToggleButton value={'forgiven'} variant="secondary">
-            Forgiven
-          </ToggleButton>
-          <ToggleButton value={'settings'} variant="secondary">
-            <img src={settingsImg} width="19px" />
-          </ToggleButton>
-        </ToggleButtonGroup>
-        <p className="lead">Compare repayment plans</p>
-      </div>
+    <div>
       <Table borderless striped>
-        <thead>
+        <thead className="position-relative">
           <tr>
             <th>
               <img src={chartImg} width="19px" />
@@ -172,8 +184,7 @@ const PaymentTable = ({payments, selected, onSelect}) => {
               onClick={onSortClick}
               id={compare}
               sort={sort}
-              colSpan={2}
-            />
+              colSpan={2}></TableHeading>
           </tr>
         </thead>
         <tbody>
@@ -190,14 +201,70 @@ const PaymentTable = ({payments, selected, onSelect}) => {
           ))}
         </tbody>
       </Table>
-    </>
+      <ButtonGroup className={`position-absolute ${className}`}>
+        <Dropdown alignRight as={ButtonGroup} onSelect={setCompare}>
+          <Dropdown.Toggle variant="secondary" className={className}>
+            <img src={ellipsisImg} width="19px" />
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Item eventKey="totalPayment">Total paid</Dropdown.Item>
+            <Dropdown.Item eventKey="totalInterest">
+              Total interest
+            </Dropdown.Item>
+            <Dropdown.Item eventKey="forgiven">Forgiven</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
+        <Dropdown alignRight as={ButtonGroup} onSelect={setCompare}>
+          <Dropdown.Toggle variant="secondary" className={className}>
+            <img src={settingsImg} width="19px" />
+          </Dropdown.Toggle>
+          <Dropdown.Menu>
+            <Dropdown.Header>
+              <Form.Group>
+                <Form.Label>Annual income growth</Form.Label>
+                <InputGroup>
+                  <Form.Control
+                    type="number"
+                    min={1}
+                    step={0.1}
+                    value={incomeGrowth.value}
+                    onChange={setIncomeGrowth}
+                  />
+                  <InputGroup.Append>
+                    <InputGroup.Text>%</InputGroup.Text>
+                  </InputGroup.Append>
+                </InputGroup>
+              </Form.Group>
+              <Form.Group>
+                <Form.Label>Annual inflation rate</Form.Label>
+                <InputGroup>
+                  <Form.Control
+                    type="number"
+                    min={1}
+                    step={0.01}
+                    value={inflationRate.value}
+                    onChange={setInflationRate}
+                  />
+                  <InputGroup.Append>
+                    <InputGroup.Text>%</InputGroup.Text>
+                  </InputGroup.Append>
+                </InputGroup>
+              </Form.Group>
+            </Dropdown.Header>
+          </Dropdown.Menu>
+        </Dropdown>
+      </ButtonGroup>
+      {styles}
+    </div>
   )
 }
 
 PaymentTable.propTypes = {
   payments: PropTypes.array.isRequired,
   selected: PropTypes.array,
-  onSelect: PropTypes.func
+  onSelect: PropTypes.func,
+  rates: PropTypes.object,
+  onRatesChange: PropTypes.func
 }
 
 export default PaymentTable

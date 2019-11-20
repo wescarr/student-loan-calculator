@@ -6,7 +6,7 @@ import IncomeForm from '../components/income_form'
 import Loan from '../components/loan'
 import Nav from 'react-bootstrap/Nav'
 import PaymentTable from '../components/payment_table'
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {States} from '../shared/calc'
@@ -32,14 +32,19 @@ const Home = () => {
     plan: '',
     payments: 0
   })
-  const [income, setIncome] = useState({
+  const [editIncome, setEditIncome] = useState(false)
+  const [selectedPayments, setSelectedPayments] = useState([])
+
+  const incomeReducer = (state, data) => {
+    return {...state, ...data}
+  }
+  const [income, setIncome] = useReducer(incomeReducer, {
     agi: 20000,
     dependents: 1,
     state: States.LOWER_48,
-    filing: 'SINGLE'
+    filing: 'SINGLE',
+    rates: {income: 0.05, inflation: 0.0236}
   })
-  const [editIncome, setEditIncome] = useState(false)
-  const [selectedPayments, setSelectedPayments] = useState([])
 
   // We intentially only rely on `loan` as a dependency to set the default
   // selected payments when the loan value initially changes.
@@ -129,13 +134,15 @@ const Home = () => {
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col key="repayments" md={9} className="repayments">
+          <Col key="repayments" md={10} className="repayments">
             {loan && !isUnkownLoan && (
               <>
                 <PaymentTable
                   payments={repayments}
                   selected={selectedPayments}
                   onSelect={onPaymentSelect}
+                  rates={income.rates}
+                  onRatesChange={rates => setIncome({rates})}
                 />
                 {selectedPayments.length > 0 && (
                   <Chart
