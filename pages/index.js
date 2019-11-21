@@ -154,7 +154,7 @@ const Home = () => {
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col key="repayments" md={10} className="repayments">
+          <Col key="repayments" md={9} className="repayments">
             {loan && !isUnkownLoan && (
               <>
                 <PaymentTable

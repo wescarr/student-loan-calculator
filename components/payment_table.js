@@ -1,3 +1,4 @@
+import Button from 'react-bootstrap/Button'
 import ButtonGroup from 'react-bootstrap/ButtonGroup'
 import Caret from '../components/caret'
 import ChartImg from '../images/chart-area.svg'
@@ -82,25 +83,18 @@ const sortRepayments = (list, sort = {}) => {
 }
 
 const TableHeading = props => {
-  const {id, label, sort, onClick, ...rest} = props
-  return (
-    <th onClick={() => onClick(id)} {...rest}>
-      <span>{label}</span>
-      {sort && sort.key === id ? <Caret dir={sort.dir} /> : null}
-      <style jsx>{`
-        th span {
-          cursor: pointer;
-        }
-      `}</style>
-    </th>
-  )
+  const {id, sort, children, ...rest} = props
+
+  const caret = sort && sort.key === id ? <Caret dir={sort.dir} /> : null
+  const variant = caret ? 'secondary' : 'light'
+
+  return <th {...rest}>{children(caret, variant)}</th>
 }
 
 TableHeading.propTypes = {
   id: PropTypes.string,
-  label: PropTypes.string,
-  sort: PropTypes.object,
-  onClick: PropTypes.func
+  children: PropTypes.any,
+  sort: PropTypes.object
 }
 
 const PaymentTable = ({payments, selected, onSelect}) => {
@@ -120,50 +114,83 @@ const PaymentTable = ({payments, selected, onSelect}) => {
   )
 
   const {className, styles} = css.resolve`
-    .btn-group {
-      right: 16px;
-      top: 4px;
-    }
-
     .btn-group .dropdown-toggle::after {
       display: none;
     }
   `
+
+  const compareItems = [
+    {id: 'totalPayment', label: 'Total paid'},
+    {id: 'totalInterest', label: 'Total interest'},
+    {id: 'forgiven', label: 'Forgiven'}
+  ]
 
   return (
     <div>
       <Table borderless striped>
         <thead className="position-relative">
           <tr>
-            <th>
+            <th className="align-middle">
               <ChartImg width="19px" />
             </th>
-            <th>Plan</th>
-            <TableHeading
-              label="Term"
-              onClick={onSortClick}
-              id="term"
-              sort={sort}
-            />
-            <TableHeading
-              label="Per month"
-              onClick={onSortClick}
-              id="payment"
-              sort={sort}
-              colSpan={2}
-            />
-            <TableHeading
-              label={
-                {
-                  totalInterest: 'Total interest',
-                  totalPayment: 'Total paid',
-                  forgiven: 'Forgiven'
-                }[compare]
-              }
-              onClick={onSortClick}
-              id={compare}
-              sort={sort}
-              colSpan={2}></TableHeading>
+            <th className="align-middle">Plan</th>
+            <TableHeading id="term" sort={sort}>
+              {(caret, variant) => (
+                <Button
+                  className="font-weight-bold"
+                  variant={variant}
+                  onClick={() => onSortClick('term')}>
+                  Term {caret}
+                </Button>
+              )}
+            </TableHeading>
+            <TableHeading id="payment" sort={sort} colSpan={2}>
+              {(caret, variant) => (
+                <Button
+                  className="font-weight-bold"
+                  variant={variant}
+                  onClick={() => onSortClick('payment')}>
+                  Per month {caret}
+                </Button>
+              )}
+            </TableHeading>
+            <TableHeading id={compare} sort={sort} colSpan={2}>
+              {(caret, variant) => (
+                <ButtonGroup className={`mr-1 ${className}`}>
+                  <Button
+                    className="font-weight-bold"
+                    onClick={() => onSortClick(compare)}
+                    variant={variant}>
+                    {
+                      {
+                        totalInterest: 'Total interest',
+                        totalPayment: 'Total paid',
+                        forgiven: 'Forgiven'
+                      }[compare]
+                    }{' '}
+                    {caret}
+                  </Button>
+                  <Dropdown alignRight as={ButtonGroup} onSelect={setCompare}>
+                    <Dropdown.Toggle variant={variant} className={className}>
+                      <EllipsisImg
+                        width="19px"
+                        fill={variant === 'light' ? '#333' : '#fff'}
+                      />
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      {compareItems.map(({id, label}) => (
+                        <Dropdown.Item
+                          key={id}
+                          eventKey={id}
+                          active={compare === id}>
+                          {label}
+                        </Dropdown.Item>
+                      ))}
+                    </Dropdown.Menu>
+                  </Dropdown>
+                </ButtonGroup>
+              )}
+            </TableHeading>
           </tr>
         </thead>
         <tbody>
@@ -180,20 +207,6 @@ const PaymentTable = ({payments, selected, onSelect}) => {
           ))}
         </tbody>
       </Table>
-      <ButtonGroup className={`position-absolute ${className}`}>
-        <Dropdown alignRight as={ButtonGroup} onSelect={setCompare}>
-          <Dropdown.Toggle variant="secondary" className={className}>
-            <EllipsisImg width="19px" />
-          </Dropdown.Toggle>
-          <Dropdown.Menu>
-            <Dropdown.Item eventKey="totalPayment">Total paid</Dropdown.Item>
-            <Dropdown.Item eventKey="totalInterest">
-              Total interest
-            </Dropdown.Item>
-            <Dropdown.Item eventKey="forgiven">Forgiven</Dropdown.Item>
-          </Dropdown.Menu>
-        </Dropdown>
-      </ButtonGroup>
       {styles}
     </div>
   )

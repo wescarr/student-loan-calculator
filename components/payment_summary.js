@@ -41,7 +41,7 @@ const PaymentSummary = props => {
               <span className="range rounded bg-info" />
             </span>
           </td>
-          <td className="text-right pl-3">
+          <td className="text-right">
             {compare === 'forgiven'
               ? simplifyCurrency(forgiven || 0)
               : simplifyCurrency(last[compare])}
