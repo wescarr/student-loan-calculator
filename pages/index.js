@@ -8,6 +8,9 @@ import Nav from 'react-bootstrap/Nav'
 import PaymentTable from '../components/payment_table'
 import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
+import Settings from '../components/settings'
+import SettingsImg from '../images/cog.svg'
+import css from 'styled-jsx/css'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {States} from '../shared/calc'
 
@@ -32,7 +35,7 @@ const Home = () => {
     plan: '',
     payments: 0
   })
-  const [editIncome, setEditIncome] = useState(false)
+  const [nav, setNav] = useState('loan')
   const [selectedPayments, setSelectedPayments] = useState([])
 
   const incomeReducer = (state, data) => {
@@ -86,6 +89,12 @@ const Home = () => {
       .map((r, i) => ({...r, color: Colors[i]}))
   }
 
+  const {className, styles} = css.resolve`
+    .nav-item {
+      flex: none;
+    }
+  `
+
   return (
     <>
       <Head>
@@ -103,8 +112,8 @@ const Home = () => {
             </div>
             <div className="shadow rounded mb-4">
               <Nav
-                activeKey={editIncome ? 'income' : 'loan'}
-                onSelect={key => setEditIncome(key === 'income')}
+                activeKey={nav}
+                onSelect={setNav}
                 justify
                 variant="pills"
                 className="px-3 pt-3">
@@ -114,18 +123,28 @@ const Home = () => {
                 <Nav.Item>
                   <Nav.Link eventKey="income">Income</Nav.Link>
                 </Nav.Item>
+                <Nav.Item className={className}>
+                  <Nav.Link eventKey="settings">
+                    <SettingsImg
+                      width={19}
+                      fill={nav === 'settings' ? '#fff' : '#aaa'}
+                    />
+                  </Nav.Link>
+                </Nav.Item>
               </Nav>
               <div className="px-3 pt-3 pb-1">
-                {editIncome ? (
+                {nav === 'income' ? (
                   <IncomeForm income={income} onChange={setIncome} />
-                ) : (
+                ) : nav === 'loan' ? (
                   <Loan loan={loan} onChange={setLoan} />
+                ) : (
+                  <Settings rates={income.rates} onChange={onRatesChange} />
                 )}
               </div>
-              {!editIncome && !income && (
+              {!nav === 'loan' && !income && (
                 <div
                   className="bg-light px-3 py-2 rounded-bottom"
-                  onClick={() => setEditIncome(true)}>
+                  onClick={() => setNav('income')}>
                   <small className="text-muted">
                     Enter your income to see additional options
                   </small>
@@ -142,8 +161,6 @@ const Home = () => {
                   payments={repayments}
                   selected={selectedPayments}
                   onSelect={onPaymentSelect}
-                  rates={income.rates}
-                  onRatesChange={onRatesChange}
                 />
                 {selectedPayments.length > 0 && (
                   <Chart
@@ -166,6 +183,7 @@ const Home = () => {
           </Col>
         </Row>
       </Container>
+      {styles}
       <style jsx>{`
         .bg-light.rounded-bottom {
           cursor: pointer;
