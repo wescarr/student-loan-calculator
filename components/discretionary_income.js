@@ -12,7 +12,14 @@ const DiscretionaryIncome = props => {
   const [dependents, onChangeDependants] = useOnChange(1, asInt)
   const [state, onChangeState] = useOnChange(States.LOWER_48)
 
-  const total = income && getDiscretionaryIncome(income, dependents, state)
+  const total =
+    income &&
+    getDiscretionaryIncome({
+      agi: income,
+      dependents,
+      state,
+      rates: {income: 0.03, inflation: 0.0236}
+    })
 
   return (
     <div {...props}>

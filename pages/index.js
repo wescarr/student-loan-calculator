@@ -6,8 +6,11 @@ import IncomeForm from '../components/income_form'
 import Loan from '../components/loan'
 import Nav from 'react-bootstrap/Nav'
 import PaymentTable from '../components/payment_table'
-import React, {useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
+import Settings from '../components/settings'
+import SettingsImg from '../images/cog.svg'
+import css from 'styled-jsx/css'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
 import {States} from '../shared/calc'
 
@@ -32,14 +35,20 @@ const Home = () => {
     plan: '',
     payments: 0
   })
-  const [income, setIncome] = useState({
+  const [nav, setNav] = useState('loan')
+  const [selectedPayments, setSelectedPayments] = useState([])
+
+  const incomeReducer = (state, data) => {
+    return {...state, ...data}
+  }
+  const [income, setIncome] = useReducer(incomeReducer, {
     agi: 20000,
     dependents: 1,
     state: States.LOWER_48,
-    filing: 'SINGLE'
+    filing: 'SINGLE',
+    rates: {income: 0.05, inflation: 0.0236}
   })
-  const [editIncome, setEditIncome] = useState(false)
-  const [selectedPayments, setSelectedPayments] = useState([])
+  const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
 
   // We intentially only rely on `loan` as a dependency to set the default
   // selected payments when the loan value initially changes.
@@ -80,6 +89,12 @@ const Home = () => {
       .map((r, i) => ({...r, color: Colors[i]}))
   }
 
+  const {className, styles} = css.resolve`
+    .nav-item {
+      flex: none;
+    }
+  `
+
   return (
     <>
       <Head>
@@ -96,30 +111,42 @@ const Home = () => {
               </p>
             </div>
             <div className="shadow rounded mb-4">
-              <Nav
-                activeKey={editIncome ? 'income' : 'loan'}
-                onSelect={key => setEditIncome(key === 'income')}
-                justify
-                variant="pills"
-                className="px-3 pt-3">
-                <Nav.Item>
-                  <Nav.Link eventKey="loan">Loan</Nav.Link>
-                </Nav.Item>
-                <Nav.Item>
-                  <Nav.Link eventKey="income">Income</Nav.Link>
-                </Nav.Item>
-              </Nav>
+              <div className="bg-light">
+                <Nav
+                  activeKey={nav}
+                  onSelect={setNav}
+                  justify
+                  variant="pills"
+                  className="px-3 py-2">
+                  <Nav.Item>
+                    <Nav.Link eventKey="loan">Loan</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item>
+                    <Nav.Link eventKey="income">Income</Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item className={className}>
+                    <Nav.Link eventKey="settings">
+                      <SettingsImg
+                        width={19}
+                        fill={nav === 'settings' ? '#fff' : '#aaa'}
+                      />
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </div>
               <div className="px-3 pt-3 pb-1">
-                {editIncome ? (
+                {nav === 'income' ? (
                   <IncomeForm income={income} onChange={setIncome} />
-                ) : (
+                ) : nav === 'loan' ? (
                   <Loan loan={loan} onChange={setLoan} />
+                ) : (
+                  <Settings rates={income.rates} onChange={onRatesChange} />
                 )}
               </div>
-              {!editIncome && !income && (
+              {!nav === 'loan' && !income && (
                 <div
                   className="bg-light px-3 py-2 rounded-bottom"
-                  onClick={() => setEditIncome(true)}>
+                  onClick={() => setNav('income')}>
                   <small className="text-muted">
                     Enter your income to see additional options
                   </small>
@@ -158,6 +185,7 @@ const Home = () => {
           </Col>
         </Row>
       </Container>
+      {styles}
       <style jsx>{`
         .bg-light.rounded-bottom {
           cursor: pointer;

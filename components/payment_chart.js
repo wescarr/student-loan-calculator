@@ -88,7 +88,7 @@ const Chart = ({payments}) => {
 
   return (
     <>
-      <div className="mt-4 mb-2 text-right">
+      <div className="mt-4 mb-2 text-center">
         <ToggleButtonGroup
           type="radio"
           name="chart_type"
