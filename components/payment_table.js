@@ -11,6 +11,7 @@ import Table from 'react-bootstrap/Table'
 import css from 'styled-jsx/css'
 
 const getPaymentsRange = repayments => {
+  repayments = repayments.filter(r => r.eligible)
   const first = repayments.map(r => r.breakdown[0].payment)
   const last = repayments.map(r => r.breakdown[r.breakdown.length - 1].payment)
 
@@ -26,6 +27,7 @@ const getPaymentsRange = repayments => {
 
 const getCompareRange = (repayments, compare) => {
   const values = repayments
+    .filter(r => r.eligible)
     .map(r =>
       compare === 'forgiven'
         ? r.forgiven || 0
