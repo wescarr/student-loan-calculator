@@ -3,7 +3,7 @@ import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
-import Loan from '../components/loan'
+import LoanList from '../components/loan_list'
 import Nav from 'react-bootstrap/Nav'
 import PaymentTable from '../components/payment_table'
 import React, {useCallback, useEffect, useReducer, useState} from 'react'
@@ -12,7 +12,7 @@ import Settings from '../components/settings'
 import SettingsImg from '../images/cog.svg'
 import css from 'styled-jsx/css'
 import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
-import {States} from '../shared/calc'
+import {consolidateLoans, States} from '../shared/calc'
 
 // Colors: https://blog.graphiq.com/finding-the-right-color-palettes-for-data-visualizations-fcd4e707a283
 const Colors = [
@@ -28,15 +28,23 @@ const Colors = [
 ]
 
 const Home = () => {
-  const [loan, setLoan] = useState({
-    balance: 20000,
-    rate: 0.06,
-    type: 'DIRECT_SUBSIDIZED',
-    plan: '',
-    payments: 0
-  })
   const [nav, setNav] = useState('loan')
   const [selectedPayments, setSelectedPayments] = useState([])
+  const [loans, setLoans] = useState([
+    {
+      id: 0,
+      balance: 20000,
+      rate: 0.06,
+      type: 'DIRECT_SUBSIDIZED',
+      plan: '',
+      payments: 0,
+      expanded: true
+    }
+  ])
+  const [loan, setLoan] = useState(consolidateLoans(loans))
+  useEffect(() => {
+    setLoan(consolidateLoans(loans))
+  }, [loans, setLoans])
 
   const incomeReducer = (state, data) => {
     return {...state, ...data}
@@ -101,11 +109,11 @@ const Home = () => {
         <title>Student Loan Calculator</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Container>
+      <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8}>
+          <Col md={4}>
             <div className="text-center mt-3 mb-4">
-              <h1 className="display-4">Student Loan Calculator</h1>
+              <h1 className="h2">Student Loan Calculator</h1>
               <p className="lead">
                 Find the best options for repaying your student loans
               </p>
@@ -119,7 +127,7 @@ const Home = () => {
                   variant="pills"
                   className="px-3 py-2">
                   <Nav.Item>
-                    <Nav.Link eventKey="loan">Loan</Nav.Link>
+                    <Nav.Link eventKey="loan">Loans</Nav.Link>
                   </Nav.Item>
                   <Nav.Item>
                     <Nav.Link eventKey="income">Income</Nav.Link>
@@ -134,11 +142,11 @@ const Home = () => {
                   </Nav.Item>
                 </Nav>
               </div>
-              <div className="px-3 pt-3 pb-1">
+              <div className="px-3 pt-3">
                 {nav === 'income' ? (
                   <IncomeForm income={income} onChange={setIncome} />
                 ) : nav === 'loan' ? (
-                  <Loan loan={loan} onChange={setLoan} />
+                  <LoanList loans={loans} onChange={setLoans} />
                 ) : (
                   <Settings rates={income.rates} onChange={onRatesChange} />
                 )}
@@ -154,16 +162,9 @@ const Home = () => {
               )}
             </div>
           </Col>
-        </Row>
-        <Row className="justify-content-center">
-          <Col key="repayments" md={9} className="repayments">
+          <Col key="repayments" md={8} className="repayments">
             {loan && !isUnkownLoan && (
               <>
-                <PaymentTable
-                  payments={repayments}
-                  selected={selectedPayments}
-                  onSelect={onPaymentSelect}
-                />
                 {selectedPayments.length > 0 && (
                   <Chart
                     payments={repayments.filter(r =>
@@ -171,6 +172,11 @@ const Home = () => {
                     )}
                   />
                 )}
+                <PaymentTable
+                  payments={repayments}
+                  selected={selectedPayments}
+                  onSelect={onPaymentSelect}
+                />
               </>
             )}
             {isUnkownLoan && (

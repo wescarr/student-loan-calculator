@@ -33,6 +33,14 @@ const dataset = (label, data, bgColor) => ({
 const chartOptions = {
   legend: {display: false},
   scales: {
+    xAxes: [
+      {
+        ticks: {
+          callback: n => new Date().getFullYear() + parseInt(n) - 1,
+          min: 0
+        }
+      }
+    ],
     yAxes: [
       {
         ticks: {
@@ -108,7 +116,7 @@ const Chart = ({payments}) => {
           </ToggleButton>
         </ToggleButtonGroup>
       </div>
-      <BarChart data={data} options={chartOptions} />
+      <BarChart data={data} options={chartOptions} height={100} width={300} />
     </>
   )
 }
