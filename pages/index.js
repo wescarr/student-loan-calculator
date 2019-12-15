@@ -67,7 +67,9 @@ const Home = () => {
     }
   }
 
-  const isUnkownLoan = loan && !LoanTypes[loan.type]
+  const isUnkownLoan = !LoanTypes[loan.type]
+  const isPrivateLoan = loan.type === 'PRIVATE'
+  const isEligble = !(isUnkownLoan || isPrivateLoan)
 
   const repayments = [
     Plans.STANDARD_FIXED(loan),
@@ -154,7 +156,7 @@ const Home = () => {
             </div>
           </Col>
           <Col key="repayments" md={8} className="repayments">
-            {loan && !isUnkownLoan && (
+            {isEligble ? (
               <>
                 {selectedPayments.length > 0 && (
                   <Chart
@@ -169,14 +171,24 @@ const Home = () => {
                   onSelect={onPaymentSelect}
                 />
               </>
-            )}
-            {isUnkownLoan && (
+            ) : (
               <Jumbotron className="m-5">
-                <p>
-                  You can retrieve your loan information from the National
-                  Student Loan Data System or by contacting your loan holder.
-                </p>
-                <Button href="https://nslds.ed.gov">Learn more</Button>
+                {isUnkownLoan && (
+                  <>
+                    <p>
+                      You can retrieve your loan information from the National
+                      Student Loan Data System or by contacting your loan
+                      holder.
+                    </p>
+                    <Button href="https://nslds.ed.gov">Learn more</Button>
+                  </>
+                )}
+                {isPrivateLoan && (
+                  <p>
+                    You will need to contact your loan holder for the specific
+                    terms of your repayment plan.
+                  </p>
+                )}
               </Jumbotron>
             )}
           </Col>

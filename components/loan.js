@@ -199,8 +199,7 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
           height: 278px;
         }
 
-        .loan-leave,
-        .loan-enter {
+        .loan-leave {
           opacity: 0;
           height: 0;
         }
@@ -215,6 +214,7 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
           z-index: 1;
         }
 
+        .loan-enter,
         .summary {
           height: 80px;
         }
