@@ -194,7 +194,7 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
       <style jsx>{`
         .loan {
           transition: background 0.25s ease-out, height 0.25s ease-out,
-            padding 0.25s ease-out, box-shadow 0.25s ease-out;
+            box-shadow 0.25s ease-out;
           overflow: hidden;
           height: 278px;
         }
@@ -223,6 +223,7 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
           opacity: 0;
           height: 0;
           padding: 0 !important;
+          transition: padding 0.25s ease-out;
         }
 
         .summary-container .border-bottom {
