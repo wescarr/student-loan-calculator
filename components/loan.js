@@ -92,7 +92,7 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
       {...props}
       className={
         loan.expanded
-          ? 'loan expanded bg-white shadow rounded px-3 pt-3 pb-1 my-n1 mx-n2'
+          ? 'loan expanded bg-white shadow border rounded px-3 pt-3 pb-1 my-n1 mx-n2'
           : 'loan summary bg-light p-3 position-relative'
       }>
       {loan.expanded ? (
@@ -157,7 +157,7 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
           <Form.Row>
             <Col>
               <Form.Group>
-                <Form.Label>Number of payments made</Form.Label>
+                <Form.Label>Payments made</Form.Label>
                 <Form.Control
                   value={payments.value}
                   onChange={onPaymentsChange}

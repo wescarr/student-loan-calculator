@@ -1,8 +1,10 @@
 import Chart from '../components/payment_chart'
+import Button from 'react-bootstrap/Button'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
+import Jumbotron from 'react-bootstrap/Jumbotron'
 import LoanList from '../components/loan_list'
 import Nav from 'react-bootstrap/Nav'
 import PaymentTable from '../components/payment_table'
@@ -29,7 +31,6 @@ const Colors = [
 
 const Home = () => {
   const [nav, setNav] = useState('loan')
-  const [selectedPayments, setSelectedPayments] = useState([])
   const [loans, setLoans] = useState([
     {
       id: 0,
@@ -58,14 +59,6 @@ const Home = () => {
   })
   const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
 
-  // We intentially only rely on `loan` as a dependency to set the default
-  // selected payments when the loan value initially changes.
-  useEffect(() => {
-    if (loan && selectedPayments.length === 0) {
-      setSelectedPayments(repayments.slice(0, 2).map(r => r.label))
-    }
-  }, [loan]) // eslint-disable-line react-hooks/exhaustive-deps
-
   const onPaymentSelect = label => {
     if (selectedPayments.includes(label) && selectedPayments.length > 1) {
       setSelectedPayments(selectedPayments.filter(l => l !== label))
@@ -76,26 +69,27 @@ const Home = () => {
 
   const isUnkownLoan = loan && !LoanTypes[loan.type]
 
-  let repayments
-  if (loan) {
-    repayments = [
-      Plans.STANDARD_FIXED(loan),
-      Plans.GRADUATED(loan),
-      Plans.FIXED_EXTENDED(loan),
-      Plans.GRADUATED_EXTENDED(loan),
-      ...(income
-        ? [
-            Plans.INCOME_BASED_REPAY(loan, income),
-            Plans.INCOME_BASED_REPAY_NEW(loan, income),
-            Plans.PAY_AS_YOU_EARN(loan, income),
-            Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
-            Plans.INCOME_CONTINGENT_REPAY(loan, income)
-          ]
-        : [])
-    ]
-      .filter(r => r.breakdown.length)
-      .map((r, i) => ({...r, color: Colors[i]}))
-  }
+  const repayments = [
+    Plans.STANDARD_FIXED(loan),
+    Plans.GRADUATED(loan),
+    Plans.FIXED_EXTENDED(loan),
+    Plans.GRADUATED_EXTENDED(loan),
+    ...(income
+      ? [
+          Plans.INCOME_BASED_REPAY(loan, income),
+          Plans.INCOME_BASED_REPAY_NEW(loan, income),
+          Plans.PAY_AS_YOU_EARN(loan, income),
+          Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
+          Plans.INCOME_CONTINGENT_REPAY(loan, income)
+        ]
+      : [])
+  ]
+    .filter(r => r.breakdown.length)
+    .map((r, i) => ({...r, color: Colors[i]}))
+
+  const [selectedPayments, setSelectedPayments] = useState(
+    repayments.slice(0, 2).map(r => r.label)
+  )
 
   const {className, styles} = css.resolve`
     .nav-item {
@@ -137,11 +131,15 @@ const Home = () => {
               </Nav>
               <div className="pt-3 px-2">
                 {nav === 'income' ? (
-                  <IncomeForm income={income} onChange={setIncome} />
+                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                    <IncomeForm income={income} onChange={setIncome} />
+                  </div>
                 ) : nav === 'loan' ? (
                   <LoanList loans={loans} onChange={setLoans} />
                 ) : (
-                  <Settings rates={income.rates} onChange={onRatesChange} />
+                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                    <Settings rates={income.rates} onChange={onRatesChange} />
+                  </div>
                 )}
               </div>
               {!nav === 'loan' && !income && (
@@ -173,13 +171,13 @@ const Home = () => {
               </>
             )}
             {isUnkownLoan && (
-              <p className="text-center p-3">
-                You can retrieve your loan information from the{' '}
-                <a href="https://nslds.ed.gov">
-                  National Student Loan Data System
-                </a>{' '}
-                or by contacting your loan holder.
-              </p>
+              <Jumbotron className="m-5">
+                <p>
+                  You can retrieve your loan information from the National
+                  Student Loan Data System or by contacting your loan holder.
+                </p>
+                <Button href="https://nslds.ed.gov">Learn more</Button>
+              </Jumbotron>
             )}
           </Col>
         </Row>
