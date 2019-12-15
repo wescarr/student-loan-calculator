@@ -199,7 +199,6 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
           height: 278px;
         }
 
-        .loan-appear,
         .loan-leave,
         .loan-enter {
           opacity: 0;
@@ -207,11 +206,6 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
         }
 
         .loan.loan-enter-active {
-          opacity: 1;
-          height: 278px;
-        }
-
-        .loan.loan-appear-active {
           opacity: 1;
           height: 278px;
         }
