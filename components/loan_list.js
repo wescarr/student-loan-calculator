@@ -1,7 +1,10 @@
 import Button from 'react-bootstrap/Button'
 import Loan from './loan'
 import PropTypes from 'prop-types'
-import React, {useCallback, useEffect, useReducer} from 'react'
+import React, {useCallback, useEffect, useMemo, useReducer} from 'react'
+import ReactCssTransition from 'react-addons-css-transition-group'
+import {consolidateLoans} from '../shared/calc'
+import {currency, plural} from '../shared/helpers'
 import {listReducer} from '../shared/hooks'
 
 let LOAN_ID = 1
@@ -52,21 +55,43 @@ const LoanList = ({loans, onChange}) => {
 
   useEffect(() => onChange(list), [list, onChange])
 
+  const loan = useMemo(() => consolidateLoans(list), [list])
+
   return (
-    <div className="pb-3">
-      {list.map(loan => (
-        <Loan
-          key={loan.id}
-          loan={loan}
-          onChange={onLoanChange}
-          onRemove={onLoanRemove}
-          onClick={onLoanClick}
-        />
-      ))}
-      <Button variant="outline-primary" size="sm" onClick={onLoanAdd}>
-        Add another loan
-      </Button>
-    </div>
+    <>
+      <div>
+        <ReactCssTransition
+          component="div"
+          transitionName="loan"
+          transitionEnterTimeout={250}
+          transitionLeaveTimeout={250}>
+          {list.map(loan => (
+            <Loan
+              key={loan.id}
+              loan={loan}
+              onChange={onLoanChange}
+              onRemove={onLoanRemove}
+              onClick={onLoanClick}
+            />
+          ))}
+        </ReactCssTransition>
+      </div>
+      <div className="bg-light p-3 mb-3 d-flex rounded-bottom">
+        <div className="flex-grow-1">
+          {list.length} {plural(list.length, 'loan')} total
+          <br />
+          <strong>{currency(loan.balance)}</strong> at{' '}
+          <strong>{(loan.rate * 100).toFixed(2)}%</strong>
+        </div>
+        <Button
+          variant="outline-primary"
+          size="sm"
+          className="align-self-center"
+          onClick={onLoanAdd}>
+          Add another loan
+        </Button>
+      </div>
+    </>
   )
 }
 

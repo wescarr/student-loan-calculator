@@ -118,31 +118,24 @@ const Home = () => {
                 Find the best options for repaying your student loans
               </p>
             </div>
-            <div className="shadow rounded mb-4">
-              <div className="bg-light">
-                <Nav
-                  activeKey={nav}
-                  onSelect={setNav}
-                  justify
-                  variant="pills"
-                  className="px-3 py-2">
-                  <Nav.Item>
-                    <Nav.Link eventKey="loan">Loans</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="income">Income</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item className={className}>
-                    <Nav.Link eventKey="settings">
-                      <SettingsImg
-                        width={19}
-                        fill={nav === 'settings' ? '#fff' : '#aaa'}
-                      />
-                    </Nav.Link>
-                  </Nav.Item>
-                </Nav>
-              </div>
-              <div className="px-3 pt-3">
+            <div>
+              <Nav activeKey={nav} onSelect={setNav} justify variant="pills">
+                <Nav.Item>
+                  <Nav.Link eventKey="loan">Loans</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="income">Income</Nav.Link>
+                </Nav.Item>
+                <Nav.Item className={className}>
+                  <Nav.Link eventKey="settings">
+                    <SettingsImg
+                      width={19}
+                      fill={nav === 'settings' ? '#fff' : '#aaa'}
+                    />
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
+              <div className="pt-3 px-2">
                 {nav === 'income' ? (
                   <IncomeForm income={income} onChange={setIncome} />
                 ) : nav === 'loan' ? (

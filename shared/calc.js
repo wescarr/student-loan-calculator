@@ -119,8 +119,8 @@ export const consolidateLoans = loans => {
   const rate = loans.reduce((r, l) => (l.balance / balance) * l.rate + r, 0)
   const payments = loans.reduce((p, l) => l.payments + p, 0)
 
-  // TODO(wes): Fix loan type. Ask Besty/Diane about this
-  return {balance, rate, payments, plan: '', type: 'DIRECT_SUBSIDIZED'}
+  // TODO(wes): Choose loan type with least repayment options
+  return {balance, rate, payments, plan: '', type: loans[0].type}
 }
 
 // Interested is subsidized for first 3 years of subsidized loans

@@ -2,8 +2,8 @@ import Col from 'react-bootstrap/Col'
 import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
-import Select from './select'
 import React, {useCallback, useEffect} from 'react'
+import Select from './select'
 import {LoanTypes} from '../shared/loan_config'
 import {
   asFloat,
@@ -20,18 +20,24 @@ const Close = props => (
 )
 
 const Summary = ({loan, onClick, onClose, ...props}) => {
-  const onRemove = useCallback(() => onClose(loan.id), [loan.id, onClose])
+  const onRemove = useCallback(
+    e => {
+      e.stopPropagation()
+      onClose(loan.id)
+    },
+    [loan.id, onClose]
+  )
   const onExpand = useCallback(() => onClick(loan.id), [loan.id, onClick])
 
   return (
-    <div
-      {...props}
-      className="border-bottom p-2 mb-3 bg-light"
-      onClick={onExpand}>
-      {LoanTypes[loan.type]}
-      <br />
-      {currency(loan.balance)} at {loan.rate * 100}%{' '}
-      <Close onClick={onRemove} />
+    <div {...props} onClick={onExpand} className="d-flex">
+      <div className="flex-grow-1">
+        {LoanTypes[loan.type]}
+        <br />
+        {currency(loan.balance)} <span className="text-muted">at</span>{' '}
+        {loan.rate * 100}%
+      </div>
+      <Close onClick={onRemove} title="Remove this loan" />
     </div>
   )
 }
@@ -82,7 +88,13 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
   ])
 
   return (
-    <div {...props}>
+    <div
+      {...props}
+      className={
+        loan.expanded
+          ? 'loan expanded bg-white shadow rounded px-3 pt-3 pb-1 my-n1 mx-n2'
+          : 'loan summary bg-light p-3 position-relative'
+      }>
       {loan.expanded ? (
         <>
           <Form>
@@ -174,8 +186,57 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
           </Form.Row>
         </>
       ) : (
-        <Summary loan={loan} onClick={onClick} onClose={onRemove} />
+        <div className="summary-container">
+          <Summary loan={loan} onClick={onClick} onClose={onRemove} />
+          <div className="border-bottom position-absolute mx-3" />
+        </div>
       )}
+      <style jsx>{`
+        .loan {
+          transition: background 0.25s ease-out, height 0.25s ease-out,
+            padding 0.25s ease-out, box-shadow 0.25s ease-out;
+          overflow: hidden;
+          height: 278px;
+        }
+
+        .loan-appear,
+        .loan-leave,
+        .loan-enter {
+          opacity: 0;
+          height: 0;
+        }
+
+        .loan.loan-enter-active {
+          opacity: 1;
+          height: 278px;
+        }
+
+        .loan.loan-appear-active {
+          opacity: 1;
+          height: 278px;
+        }
+
+        .expanded {
+          position: relative; // Force higher z-index
+          z-index: 1;
+        }
+
+        .summary {
+          height: 80px;
+        }
+
+        .summary.loan-leave-active {
+          opacity: 0;
+          height: 0;
+          padding: 0 !important;
+        }
+
+        .summary-container .border-bottom {
+          left: 0;
+          right: 0;
+          bottom: 0;
+        }
+      `}</style>
     </div>
   )
 }
