@@ -76,15 +76,11 @@ const Home = () => {
     Plans.GRADUATED(loan),
     Plans.FIXED_EXTENDED(loan),
     Plans.GRADUATED_EXTENDED(loan),
-    ...(income
-      ? [
-          Plans.INCOME_BASED_REPAY(loan, income),
-          Plans.INCOME_BASED_REPAY_NEW(loan, income),
-          Plans.PAY_AS_YOU_EARN(loan, income),
-          Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
-          Plans.INCOME_CONTINGENT_REPAY(loan, income)
-        ]
-      : [])
+    Plans.INCOME_BASED_REPAY(loan, income),
+    Plans.INCOME_BASED_REPAY_NEW(loan, income),
+    Plans.PAY_AS_YOU_EARN(loan, income),
+    Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
+    Plans.INCOME_CONTINGENT_REPAY(loan, income)
   ]
     .filter(r => r.breakdown.length)
     .map((r, i) => ({...r, color: Colors[i]}))
