@@ -107,8 +107,17 @@ export const partialFinancialHardship = (loan, income, rate = 0.15) => {
   return payment > (discrectionary / MONTHS) * rate
 }
 
-export const proRatedTerm = (loan, term) =>
-  (term * MONTHS - loan.payments) / MONTHS
+export const proRatedTerm = (loan, term, idr = false) => {
+  return idr &&
+    [
+      'GRADUATED',
+      'FIXED_EXTENDED',
+      'GRADUATED_EXTENDED',
+      'STANDARD_CONSOLIDATED'
+    ].includes(loan.plan)
+    ? term
+    : (term * MONTHS - loan.payments) / MONTHS
+}
 
 export const consolidateLoans = loans => {
   if (loans.length === 1) {
@@ -132,6 +141,21 @@ export const isInterestSubsidized = (loan, month, limit = 36) => {
       'STAFFORD_SUBSIDIZED'
     ].includes(loan.type) && month <= limit - loan.payments
   )
+}
+
+export const getExtendedLoanTerm = loan => {
+  const {balance} = loan
+  if (balance < 10000) {
+    return 12
+  } else if (balance < 20000) {
+    return 15
+  } else if (balance < 40000) {
+    return 20
+  } else if (balance < 60000) {
+    return 25
+  } else {
+    return 30
+  }
 }
 
 // TODO(wes): Inforce minimum payments
@@ -165,7 +189,7 @@ export const incomeBasedRepayment = (
   term = 25,
   disRate = 0.15
 ) => {
-  term = proRatedTerm(loan, term)
+  term = proRatedTerm(loan, term, true)
   const {balance, rate} = loan
   const breakdown = getIncomeBreakdown(
     loan,
@@ -250,7 +274,7 @@ export const payeBasedRepayment = (
   disRate = 0.1,
   repay = false
 ) => {
-  term = proRatedTerm(loan, term)
+  term = proRatedTerm(loan, term, true)
   const {balance, rate} = loan
   const breakdown = getPayeBreakdown(
     loan,
@@ -341,7 +365,7 @@ export const getPayeBreakdown = (
 }
 
 export const icrBasedRepayment = (loan, income, term = 25) => {
-  term = proRatedTerm(loan, term)
+  term = proRatedTerm(loan, term, true)
   const {balance, rate} = loan
 
   const breakdown = getIcrBreakdown(balance, rate, term, income)
