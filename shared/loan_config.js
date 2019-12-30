@@ -1,6 +1,7 @@
 import {
   MONTHS,
   fixedRateRepayment,
+  getExtendedLoanTerm,
   graduatedRepayment,
   icrBasedRepayment,
   incomeBasedRepayment,
@@ -31,6 +32,18 @@ export const TaxFilingStatus = {
   MARRIED_SEPARATE: 'Married filing separately'
 }
 
+// Options for existing loan payments.
+// TODO(wes): Ask Betsy if it's just best to present the full instead for
+// users for consistency.
+export const LoanRepaymentTypes = {
+  STANDARD_FIXED: 'Standard Fixed',
+  STANDARD_CONSOLIDATED: 'Standard Consolidated',
+  FIXED_EXTENDED: 'Fixed Extended',
+  GRADUATED: 'Graduated',
+  GRADUATED_EXTENDED: 'Graduated Extended',
+  INCOME: 'Income Driven Plan'
+}
+
 export const RepaymentPlans = {
   STANDARD_FIXED: loan => ({
     label: 'Standard Fixed',
@@ -51,7 +64,7 @@ export const RepaymentPlans = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'FFEL_CONSOLIDATED'
     ].includes(loan.type),
-    ...fixedRateRepayment(loan, 25)
+    ...fixedRateRepayment(loan, getExtendedLoanTerm(loan))
   }),
   GRADUATED: loan => ({
     label: 'Graduated',
@@ -62,6 +75,7 @@ export const RepaymentPlans = {
       'DIRECT_PLUS_PARENTS',
       'DIRECT_CONSOLIDATED_SUBSIDIZED',
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+      'DIRECT_PLUS_CONSOLIDATED',
       'STAFFORD_SUBSIDIZED',
       'STAFFORD_UNSUBSIDIZED',
       'FFEL_CONSOLIDATED',
@@ -84,7 +98,7 @@ export const RepaymentPlans = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'FFEL_CONSOLIDATED'
     ].includes(loan.type),
-    ...graduatedRepayment(loan, 25)
+    ...graduatedRepayment(loan, getExtendedLoanTerm(loan))
   }),
   INCOME_BASED_REPAY: (loan, income) => {
     const eligible = partialFinancialHardship(loan, income, 0.15)
@@ -106,7 +120,8 @@ export const RepaymentPlans = {
           'FFEL_PRO',
           'FFEL_CONSOLIDATED',
           'DIRECT_PLUS_PRO',
-          'DIRECT_PLUS_CONSOLIDATED'
+          'DIRECT_CONSOLIDATED_SUBSIDIZED',
+          'DIRECT_CONSOLIDATED_UNSUBSIDIZED'
         ].includes(loan.type),
       forgiven,
       payment,
@@ -128,12 +143,9 @@ export const RepaymentPlans = {
         [
           'DIRECT_SUBSIDIZED',
           'DIRECT_UNSUBSIDIZED',
-          'STAFFORD_SUBSIDIZED',
-          'STAFFORD_UNSUBSIDIZED',
-          'FFEL_PRO',
-          'FFEL_CONSOLIDATED',
-          'DIRECT_PLUS_PRO',
-          'DIRECT_PLUS_CONSOLIDATED'
+          'DIRECT_CONSOLIDATED_SUBSIDIZED',
+          'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+          'DIRECT_PLUS_PRO'
         ].includes(loan.type),
       forgiven,
       payment,
@@ -155,12 +167,9 @@ export const RepaymentPlans = {
         [
           'DIRECT_SUBSIDIZED',
           'DIRECT_UNSUBSIDIZED',
-          'STAFFORD_SUBSIDIZED',
-          'STAFFORD_UNSUBSIDIZED',
-          'FFEL_PRO',
-          'FFEL_CONSOLIDATED',
-          'DIRECT_PLUS_PRO',
-          'DIRECT_PLUS_CONSOLIDATED'
+          'DIRECT_CONSOLIDATED_SUBSIDIZED',
+          'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+          'DIRECT_PLUS_PRO'
         ].includes(loan.type),
       forgiven,
       payment,
@@ -182,12 +191,9 @@ export const RepaymentPlans = {
         [
           'DIRECT_SUBSIDIZED',
           'DIRECT_UNSUBSIDIZED',
-          'STAFFORD_SUBSIDIZED',
-          'STAFFORD_UNSUBSIDIZED',
-          'FFEL_PRO',
-          'FFEL_CONSOLIDATED',
-          'DIRECT_PLUS_PRO',
-          'DIRECT_PLUS_CONSOLIDATED'
+          'DIRECT_CONSOLIDATED_SUBSIDIZED',
+          'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+          'DIRECT_PLUS_PRO'
         ].includes(loan.type),
       forgiven,
       payment,
@@ -208,7 +214,6 @@ export const RepaymentPlans = {
         'DIRECT_UNSUBSIDIZED',
         'DIRECT_CONSOLIDATED_SUBSIDIZED',
         'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
-        'DIRECT_PLUS_CONSOLIDATED',
         'DIRECT_PLUS_PRO'
       ].includes(loan.type),
       forgiven,
