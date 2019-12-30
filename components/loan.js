@@ -4,7 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
 import Select from './select'
 import React, {useEffect} from 'react'
-import {LoanTypes} from '../shared/loan_config'
+import {LoanTypes, LoanRepaymentTypes} from '../shared/loan_config'
 import {
   asFloat,
   asInt,
@@ -110,11 +110,11 @@ const Loan = ({onChange, loan, ...props}) => {
                 <option value="" disabled>
                   Payment plan
                 </option>
-                <option value="Standard Fixed">Standard Fixed</option>
-                <option value="Fixed Extended">Fixed Extended</option>
-                <option value="Graduated">Graduated</option>
-                <option value="Graduated Extended">Graduated Extended</option>
-                <option value="Income">Income Driven Plan</option>
+                {Object.entries(LoanRepaymentTypes).map(([id, name]) => (
+                  <option key={id} value={id}>
+                    {name}
+                  </option>
+                ))}
               </Select>
             </InputGroup>
           </Form.Group>
