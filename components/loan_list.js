@@ -53,7 +53,9 @@ const LoanList = ({loans, income, onChange}) => {
     [list, updateList]
   )
 
-  useEffect(() => onChange(list), [list, onChange])
+  useEffect(() => {
+    onChange(list)
+  }, [list, onChange])
 
   const loan = useMemo(() => consolidateLoans(list, income), [list, income])
 
