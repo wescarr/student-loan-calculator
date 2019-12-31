@@ -17,6 +17,7 @@ const getYearBreakdown = (breakdown, attr) => {
 }
 
 const dataset = (label, data, bgColor) => ({
+  stack: label,
   label,
   data,
   fill: 'origin',
@@ -48,7 +49,8 @@ const chartOptions = {
           // Write simplified dollar values like "$10k" or "$1.2m"
           callback: simplifyCurrency,
           min: 0
-        }
+        },
+        stacked: true
       }
     ]
   },
@@ -91,7 +93,7 @@ const getChartData = (repayments, attr) => {
 }
 
 const Chart = ({payments}) => {
-  const [compare, setCompare] = useState('endingBalance')
+  const [compare, setCompare] = useState('payment')
   const data = getChartData(payments, compare)
 
   return (

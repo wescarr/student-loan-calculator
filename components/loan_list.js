@@ -3,13 +3,13 @@ import Loan from './loan'
 import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useMemo, useReducer} from 'react'
 import ReactCssTransition from 'react-addons-css-transition-group'
-import {consolidateLoans} from '../shared/calc'
+import {consolidateLoans} from '../shared/loan_config.js'
 import {currency, plural} from '../shared/helpers'
 import {listReducer} from '../shared/hooks'
 
 let LOAN_ID = 1
 
-const LoanList = ({loans, onChange}) => {
+const LoanList = ({loans, income, onChange}) => {
   const [list, updateList] = useReducer(listReducer, loans)
   const onLoanChange = useCallback(
     (id, data) => updateList({type: 'update', id, data}),
@@ -55,7 +55,7 @@ const LoanList = ({loans, onChange}) => {
 
   useEffect(() => onChange(list), [list, onChange])
 
-  const loan = useMemo(() => consolidateLoans(list), [list])
+  const loan = useMemo(() => consolidateLoans(list, income), [list, income])
 
   return (
     <>
@@ -97,7 +97,8 @@ const LoanList = ({loans, onChange}) => {
 
 LoanList.propTypes = {
   onChange: PropTypes.func,
-  loans: PropTypes.array
+  loans: PropTypes.array,
+  income: PropTypes.object
 }
 
 export default LoanList

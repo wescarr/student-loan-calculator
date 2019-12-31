@@ -119,19 +119,6 @@ export const proRatedTerm = (loan, term, idr = false) => {
     : (term * MONTHS - loan.payments) / MONTHS
 }
 
-export const consolidateLoans = loans => {
-  if (loans.length === 1) {
-    return loans[0]
-  }
-
-  const balance = loans.reduce((b, l) => l.balance + b, 0)
-  const rate = loans.reduce((r, l) => (l.balance / balance) * l.rate + r, 0)
-  const payments = loans.reduce((p, l) => l.payments + p, 0)
-
-  // TODO(wes): Choose loan type with least repayment options
-  return {balance, rate, payments, plan: '', type: loans[0].type}
-}
-
 // Interested is subsidized for first 3 years of subsidized loans
 export const isInterestSubsidized = (loan, month, limit = 36) => {
   return (

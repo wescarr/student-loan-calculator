@@ -13,8 +13,12 @@ import Row from 'react-bootstrap/Row'
 import Settings from '../components/settings'
 import SettingsImg from '../images/cog.svg'
 import css from 'styled-jsx/css'
-import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
-import {consolidateLoans, States} from '../shared/calc'
+import {
+  consolidateLoans,
+  getRepaymentOpions,
+  LoanTypes
+} from '../shared/loan_config'
+import {States} from '../shared/calc'
 
 // Colors: https://blog.graphiq.com/finding-the-right-color-palettes-for-data-visualizations-fcd4e707a283
 const Colors = [
@@ -31,21 +35,6 @@ const Colors = [
 
 const Home = () => {
   const [nav, setNav] = useState('loan')
-  const [loans, setLoans] = useState([
-    {
-      id: 0,
-      balance: 20000,
-      rate: 0.06,
-      type: 'DIRECT_SUBSIDIZED',
-      plan: '',
-      payments: 0,
-      expanded: true
-    }
-  ])
-  const [loan, setLoan] = useState(consolidateLoans(loans))
-  useEffect(() => {
-    setLoan(consolidateLoans(loans))
-  }, [loans, setLoans])
 
   const incomeReducer = (state, data) => {
     return {...state, ...data}
@@ -59,6 +48,22 @@ const Home = () => {
   })
   const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
 
+  const [loans, setLoans] = useState([
+    {
+      id: 0,
+      balance: 20000,
+      rate: 0.06,
+      type: 'DIRECT_SUBSIDIZED',
+      plan: '',
+      payments: 0,
+      expanded: true
+    }
+  ])
+  const [loan, setLoan] = useState(consolidateLoans(loans, income))
+  useEffect(() => {
+    setLoan(consolidateLoans(loans, income))
+  }, [income, loans, setLoans])
+
   const onPaymentSelect = label => {
     if (selectedPayments.includes(label) && selectedPayments.length > 1) {
       setSelectedPayments(selectedPayments.filter(l => l !== label))
@@ -71,19 +76,10 @@ const Home = () => {
   const isPrivateLoan = loan.type === 'PRIVATE'
   const isEligble = !(isUnkownLoan || isPrivateLoan)
 
-  const repayments = [
-    Plans.STANDARD_FIXED(loan),
-    Plans.GRADUATED(loan),
-    Plans.FIXED_EXTENDED(loan),
-    Plans.GRADUATED_EXTENDED(loan),
-    Plans.INCOME_BASED_REPAY(loan, income),
-    Plans.INCOME_BASED_REPAY_NEW(loan, income),
-    Plans.PAY_AS_YOU_EARN(loan, income),
-    Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
-    Plans.INCOME_CONTINGENT_REPAY(loan, income)
-  ]
-    .filter(r => r.breakdown.length)
-    .map((r, i) => ({...r, color: Colors[i]}))
+  const repayments = getRepaymentOpions(loan, income).map((r, i) => ({
+    ...r,
+    color: Colors[i]
+  }))
 
   const [selectedPayments, setSelectedPayments] = useState(
     repayments.slice(0, 2).map(r => r.label)
@@ -133,7 +129,7 @@ const Home = () => {
                     <IncomeForm income={income} onChange={setIncome} />
                   </div>
                 ) : nav === 'loan' ? (
-                  <LoanList loans={loans} onChange={setLoans} />
+                  <LoanList loans={loans} income={income} onChange={setLoans} />
                 ) : (
                   <div className="bg-light rounded px-3 pt-3 pb-1">
                     <Settings rates={income.rates} onChange={onRatesChange} />
