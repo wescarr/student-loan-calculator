@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useMemo, useReducer} from 'react'
 import ReactCssTransition from 'react-addons-css-transition-group'
 import {consolidateLoans} from '../shared/loan_config.js'
-import {currency, plural} from '../shared/helpers'
+import {currency, formatFloat, plural} from '../shared/helpers'
 import {listReducer} from '../shared/hooks'
 
 let LOAN_ID = 1
@@ -83,7 +83,7 @@ const LoanList = ({loans, income, onChange}) => {
           {list.length} {plural(list.length, 'loan')} total
           <br />
           <strong>{currency(loan.balance)}</strong> at{' '}
-          <strong>{(loan.rate * 100).toFixed(2)}%</strong>
+          <strong>{formatFloat(loan.rate * 100)}%</strong>
         </div>
         <Button
           variant="outline-primary"

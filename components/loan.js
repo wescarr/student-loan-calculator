@@ -11,7 +11,7 @@ import {
   useDeferredOnChange,
   useOnChange
 } from '@standardlabs/react-hooks'
-import {currency} from '../shared/helpers'
+import {currency, formatFloat} from '../shared/helpers'
 
 const Close = props => (
   <button className="close" {...props}>
@@ -142,7 +142,7 @@ const Loan = ({onChange, onClick, onRemove, loan, ...props}) => {
                     type="number"
                     placeholder="5"
                     onChange={onRateChange}
-                    value={rate.value}
+                    value={formatFloat(rate.value)}
                     min={1}
                     max={10}
                     step={0.1}
