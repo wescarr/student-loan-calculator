@@ -1,4 +1,3 @@
-import Chart from '../components/payment_chart'
 import Button from 'react-bootstrap/Button'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
@@ -7,7 +6,7 @@ import IncomeForm from '../components/income_form'
 import Jumbotron from 'react-bootstrap/Jumbotron'
 import LoanList from '../components/loan_list'
 import Nav from 'react-bootstrap/Nav'
-import PaymentTable from '../components/payment_table'
+import PaymentList from '../components/payment_list'
 import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import Settings from '../components/settings'
@@ -96,6 +95,10 @@ const Home = () => {
       <Head>
         <title>Student Loan Calculator</title>
         <link rel="icon" href="/favicon.ico" />
+        <link
+          href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap"
+          rel="stylesheet"
+        />
       </Head>
       <Container fluid>
         <Row className="justify-content-center">
@@ -147,17 +150,12 @@ const Home = () => {
               )}
             </div>
           </Col>
-          <Col key="repayments" md={8} className="repayments">
+        </Row>
+        <Row className="justify-content-center">
+          <Col key="repayments" md={6} className="repayments">
             {isEligble ? (
               <>
-                {selectedPayments.length > 0 && (
-                  <Chart
-                    payments={repayments.filter(r =>
-                      selectedPayments.includes(r.label)
-                    )}
-                  />
-                )}
-                <PaymentTable
+                <PaymentList
                   payments={repayments}
                   selected={selectedPayments}
                   onSelect={onPaymentSelect}
@@ -190,6 +188,11 @@ const Home = () => {
       <style jsx>{`
         .bg-light.rounded-bottom {
           cursor: pointer;
+        }
+      `}</style>
+      <style jsx global>{`
+        body {
+          font-family: 'Roboto', sans-serif;
         }
       `}</style>
     </>
