@@ -35,4 +35,5 @@ export const hexToRgbA = (hex, alpha) => {
 export const classNames = classes =>
   Object.entries(classes)
     .map(([name, truthy]) => truthy && name)
+    .filter(Boolean)
     .join(' ')

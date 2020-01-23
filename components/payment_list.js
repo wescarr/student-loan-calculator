@@ -46,11 +46,12 @@ const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
 
   const classes = classNames({
     card: selected,
-    'm-2': 1,
+    'p-1': 1,
     shadow: selected,
     'border-bottom': !selected,
     'position-sticky': selected,
-    'sticky-top': selected
+    'sticky-top': selected,
+    'bg-light': !eligible
   })
 
   if (!eligible) {
@@ -59,7 +60,7 @@ const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
         <div className="card-body p-2">
           <h6 className="card-title font-weight-bold">{label}</h6>
           <div className="card-text">
-            <p>Your loan is not elgible for this repayment plan</p>
+            Your loan is not elgible for this repayment plan
           </div>
         </div>
       </div>
