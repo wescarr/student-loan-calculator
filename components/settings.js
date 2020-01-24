@@ -4,6 +4,7 @@ import InputGroup from 'react-bootstrap/InputGroup'
 import PropTypes from 'prop-types'
 import React, {useEffect} from 'react'
 import {asFloat, useDeferredOnChange} from '@standardlabs/react-hooks'
+import {formatFloat} from '../shared/helpers'
 
 const Settings = ({onChange, rates, ...props}) => {
   const [incomeGrowth, setIncomeGrowth] = useDeferredOnChange(
@@ -35,7 +36,7 @@ const Settings = ({onChange, rates, ...props}) => {
                 type="number"
                 min={1}
                 step={0.1}
-                value={incomeGrowth.value}
+                value={formatFloat(incomeGrowth.value)}
                 onChange={setIncomeGrowth}
               />
               <InputGroup.Append>
@@ -52,7 +53,7 @@ const Settings = ({onChange, rates, ...props}) => {
                 type="number"
                 min={1}
                 step={0.01}
-                value={inflationRate.value}
+                value={formatFloat(inflationRate.value)}
                 onChange={setInflationRate}
               />
               <InputGroup.Append>

@@ -1,9 +1,11 @@
 import Chart from '../components/payment_chart'
+import Button from 'react-bootstrap/Button'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
-import Loan from '../components/loan'
+import Jumbotron from 'react-bootstrap/Jumbotron'
+import LoanList from '../components/loan_list'
 import Nav from 'react-bootstrap/Nav'
 import PaymentTable from '../components/payment_table'
 import React, {useCallback, useEffect, useReducer, useState} from 'react'
@@ -11,7 +13,11 @@ import Row from 'react-bootstrap/Row'
 import Settings from '../components/settings'
 import SettingsImg from '../images/cog.svg'
 import css from 'styled-jsx/css'
-import {LoanTypes, RepaymentPlans as Plans} from '../shared/loan_config'
+import {
+  consolidateLoans,
+  getRepaymentOpions,
+  LoanTypes
+} from '../shared/loan_config'
 import {States} from '../shared/calc'
 
 // Colors: https://blog.graphiq.com/finding-the-right-color-palettes-for-data-visualizations-fcd4e707a283
@@ -28,15 +34,7 @@ const Colors = [
 ]
 
 const Home = () => {
-  const [loan, setLoan] = useState({
-    balance: 20000,
-    rate: 0.06,
-    type: 'DIRECT_SUBSIDIZED',
-    plan: '',
-    payments: 0
-  })
   const [nav, setNav] = useState('loan')
-  const [selectedPayments, setSelectedPayments] = useState([])
 
   const incomeReducer = (state, data) => {
     return {...state, ...data}
@@ -50,13 +48,21 @@ const Home = () => {
   })
   const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
 
-  // We intentially only rely on `loan` as a dependency to set the default
-  // selected payments when the loan value initially changes.
-  useEffect(() => {
-    if (loan && selectedPayments.length === 0) {
-      setSelectedPayments(repayments.slice(0, 2).map(r => r.label))
+  const [loans, setLoans] = useState([
+    {
+      id: 0,
+      balance: 20000,
+      rate: 0.06,
+      type: 'DIRECT_SUBSIDIZED',
+      plan: '',
+      payments: 0,
+      expanded: true
     }
-  }, [loan]) // eslint-disable-line react-hooks/exhaustive-deps
+  ])
+  const [loan, setLoan] = useState(consolidateLoans(loans, income))
+  useEffect(() => {
+    setLoan(consolidateLoans(loans, income))
+  }, [income, loans, setLoans])
 
   const onPaymentSelect = label => {
     if (selectedPayments.includes(label) && selectedPayments.length > 1) {
@@ -66,28 +72,18 @@ const Home = () => {
     }
   }
 
-  const isUnkownLoan = loan && !LoanTypes[loan.type]
+  const isUnkownLoan = !LoanTypes[loan.type]
+  const isPrivateLoan = loan.type === 'PRIVATE'
+  const isEligble = !(isUnkownLoan || isPrivateLoan)
 
-  let repayments
-  if (loan) {
-    repayments = [
-      Plans.STANDARD_FIXED(loan),
-      Plans.GRADUATED(loan),
-      Plans.FIXED_EXTENDED(loan),
-      Plans.GRADUATED_EXTENDED(loan),
-      ...(income
-        ? [
-            Plans.INCOME_BASED_REPAY(loan, income),
-            Plans.INCOME_BASED_REPAY_NEW(loan, income),
-            Plans.PAY_AS_YOU_EARN(loan, income),
-            Plans.REVISED_PAY_AS_YOU_EARN(loan, income),
-            Plans.INCOME_CONTINGENT_REPAY(loan, income)
-          ]
-        : [])
-    ]
-      .filter(r => r.breakdown.length)
-      .map((r, i) => ({...r, color: Colors[i]}))
-  }
+  const repayments = getRepaymentOpions(loan, income).map((r, i) => ({
+    ...r,
+    color: Colors[i]
+  }))
+
+  const [selectedPayments, setSelectedPayments] = useState(
+    repayments.slice(0, 2).map(r => r.label)
+  )
 
   const {className, styles} = css.resolve`
     .nav-item {
@@ -101,46 +97,43 @@ const Home = () => {
         <title>Student Loan Calculator</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Container>
+      <Container fluid>
         <Row className="justify-content-center">
-          <Col md={8}>
+          <Col md={4}>
             <div className="text-center mt-3 mb-4">
-              <h1 className="display-4">Student Loan Calculator</h1>
+              <h1 className="h2">Student Loan Calculator</h1>
               <p className="lead">
                 Find the best options for repaying your student loans
               </p>
             </div>
-            <div className="shadow rounded mb-4">
-              <div className="bg-light">
-                <Nav
-                  activeKey={nav}
-                  onSelect={setNav}
-                  justify
-                  variant="pills"
-                  className="px-3 py-2">
-                  <Nav.Item>
-                    <Nav.Link eventKey="loan">Loan</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item>
-                    <Nav.Link eventKey="income">Income</Nav.Link>
-                  </Nav.Item>
-                  <Nav.Item className={className}>
-                    <Nav.Link eventKey="settings">
-                      <SettingsImg
-                        width={19}
-                        fill={nav === 'settings' ? '#fff' : '#aaa'}
-                      />
-                    </Nav.Link>
-                  </Nav.Item>
-                </Nav>
-              </div>
-              <div className="px-3 pt-3 pb-1">
+            <div>
+              <Nav activeKey={nav} onSelect={setNav} justify variant="pills">
+                <Nav.Item>
+                  <Nav.Link eventKey="loan">Loans</Nav.Link>
+                </Nav.Item>
+                <Nav.Item>
+                  <Nav.Link eventKey="income">Income</Nav.Link>
+                </Nav.Item>
+                <Nav.Item className={className}>
+                  <Nav.Link eventKey="settings">
+                    <SettingsImg
+                      width={19}
+                      fill={nav === 'settings' ? '#fff' : '#aaa'}
+                    />
+                  </Nav.Link>
+                </Nav.Item>
+              </Nav>
+              <div className="pt-3 px-2">
                 {nav === 'income' ? (
-                  <IncomeForm income={income} onChange={setIncome} />
+                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                    <IncomeForm income={income} onChange={setIncome} />
+                  </div>
                 ) : nav === 'loan' ? (
-                  <Loan loan={loan} onChange={setLoan} />
+                  <LoanList loans={loans} income={income} onChange={setLoans} />
                 ) : (
-                  <Settings rates={income.rates} onChange={onRatesChange} />
+                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                    <Settings rates={income.rates} onChange={onRatesChange} />
+                  </div>
                 )}
               </div>
               {!nav === 'loan' && !income && (
@@ -154,16 +147,9 @@ const Home = () => {
               )}
             </div>
           </Col>
-        </Row>
-        <Row className="justify-content-center">
-          <Col key="repayments" md={9} className="repayments">
-            {loan && !isUnkownLoan && (
+          <Col key="repayments" md={8} className="repayments">
+            {isEligble ? (
               <>
-                <PaymentTable
-                  payments={repayments}
-                  selected={selectedPayments}
-                  onSelect={onPaymentSelect}
-                />
                 {selectedPayments.length > 0 && (
                   <Chart
                     payments={repayments.filter(r =>
@@ -171,16 +157,31 @@ const Home = () => {
                     )}
                   />
                 )}
+                <PaymentTable
+                  payments={repayments}
+                  selected={selectedPayments}
+                  onSelect={onPaymentSelect}
+                />
               </>
-            )}
-            {isUnkownLoan && (
-              <p className="text-center p-3">
-                You can retrieve your loan information from the{' '}
-                <a href="https://nslds.ed.gov">
-                  National Student Loan Data System
-                </a>{' '}
-                or by contacting your loan holder.
-              </p>
+            ) : (
+              <Jumbotron className="m-5">
+                {isUnkownLoan && (
+                  <>
+                    <p>
+                      You can retrieve your loan information from the National
+                      Student Loan Data System or by contacting your loan
+                      holder.
+                    </p>
+                    <Button href="https://nslds.ed.gov">Learn more</Button>
+                  </>
+                )}
+                {isPrivateLoan && (
+                  <p>
+                    You will need to contact your loan holder for the specific
+                    terms of your repayment plan.
+                  </p>
+                )}
+              </Jumbotron>
             )}
           </Col>
         </Row>

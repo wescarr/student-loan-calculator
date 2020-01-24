@@ -17,6 +17,7 @@ const getYearBreakdown = (breakdown, attr) => {
 }
 
 const dataset = (label, data, bgColor) => ({
+  stack: label,
   label,
   data,
   fill: 'origin',
@@ -33,6 +34,14 @@ const dataset = (label, data, bgColor) => ({
 const chartOptions = {
   legend: {display: false},
   scales: {
+    xAxes: [
+      {
+        ticks: {
+          callback: n => new Date().getFullYear() + parseInt(n) - 1,
+          min: 0
+        }
+      }
+    ],
     yAxes: [
       {
         ticks: {
@@ -40,7 +49,8 @@ const chartOptions = {
           // Write simplified dollar values like "$10k" or "$1.2m"
           callback: simplifyCurrency,
           min: 0
-        }
+        },
+        stacked: true
       }
     ]
   },
@@ -83,7 +93,7 @@ const getChartData = (repayments, attr) => {
 }
 
 const Chart = ({payments}) => {
-  const [compare, setCompare] = useState('endingBalance')
+  const [compare, setCompare] = useState('payment')
   const data = getChartData(payments, compare)
 
   return (
@@ -108,7 +118,7 @@ const Chart = ({payments}) => {
           </ToggleButton>
         </ToggleButtonGroup>
       </div>
-      <BarChart data={data} options={chartOptions} />
+      <BarChart data={data} options={chartOptions} height={100} width={300} />
     </>
   )
 }

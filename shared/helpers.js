@@ -1,3 +1,9 @@
+export const plural = (count, prefix, suffix = 's') =>
+  count === 1 ? prefix : `${prefix}${suffix}`
+
+export const formatFloat = (value, precision = 2) =>
+  parseFloat(value.toFixed(precision))
+
 export const currency = (num, round = true) =>
   (round ? Math.round(num) : num).toLocaleString(undefined, {
     style: 'currency',

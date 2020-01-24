@@ -146,7 +146,11 @@ const PaymentTable = ({payments, selected, onSelect}) => {
                 </Button>
               )}
             </TableHeading>
-            <TableHeading id="payment" sort={sort} colSpan={2}>
+            <TableHeading
+              id="payment"
+              sort={sort}
+              colSpan={2}
+              className="text-center">
               {(caret, variant) => (
                 <Button
                   className="font-weight-bold"
@@ -156,7 +160,11 @@ const PaymentTable = ({payments, selected, onSelect}) => {
                 </Button>
               )}
             </TableHeading>
-            <TableHeading id={compare} sort={sort} colSpan={2}>
+            <TableHeading
+              id={compare}
+              sort={sort}
+              colSpan={2}
+              className="text-center">
               {(caret, variant) => (
                 <ButtonGroup className={`mr-1 ${className}`}>
                   <Button
