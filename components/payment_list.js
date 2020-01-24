@@ -192,31 +192,33 @@ const PaymentList = ({payments}) => {
   const eligible = payments.filter(p => p.eligible)
 
   return (
-    <div>
+    <>
       <p className="lead mt-2 text-center">
         Based on your loans and income, you qualify for {eligible.length}{' '}
         repayment plans.
         <br />
         Choose a plan below to see how it compares to all the others.
       </p>
-      <Tile
-        payment={selected}
-        selected={true}
-        plans={payments}
-        onSelect={onSelect}
-      />
-      {payments.map(
-        r =>
-          r.label !== selected.label && (
-            <Tile
-              key={r.label}
-              payment={r}
-              versus={selected}
-              plans={payments}
-            />
-          )
-      )}
-    </div>
+      <div className="mx-n3 mx-sm-auto">
+        <Tile
+          payment={selected}
+          selected={true}
+          plans={payments}
+          onSelect={onSelect}
+        />
+        {payments.map(
+          r =>
+            r.label !== selected.label && (
+              <Tile
+                key={r.label}
+                payment={r}
+                versus={selected}
+                plans={payments}
+              />
+            )
+        )}
+      </div>
+    </>
   )
 }
 
