@@ -1,7 +1,5 @@
 import PropTypes from 'prop-types'
-import React, {useState} from 'react'
-import ToggleButton from 'react-bootstrap/ToggleButton'
-import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
+import React from 'react'
 import dynamic from 'next/dynamic'
 import {currency, hexToRgbA, simplifyCurrency} from '../shared/helpers'
 
@@ -96,47 +94,16 @@ const getChartData = (repayments, attr) => {
   return data
 }
 
-const Chart = ({payments, options, showToggle}) => {
-  const [compare, setCompare] = useState('payment')
+const Chart = ({payments, compare, options}) => {
   const data = getChartData(payments, compare)
 
-  return (
-    <>
-      {showToggle && (
-        <div className="mt-4 mb-2 text-center">
-          <ToggleButtonGroup
-            type="radio"
-            name="chart_type"
-            value={compare}
-            onChange={setCompare}>
-            <ToggleButton value={'payment'} variant="secondary">
-              Monthly payment
-            </ToggleButton>
-            <ToggleButton value={'endingBalance'} variant="secondary">
-              Balance
-            </ToggleButton>
-            <ToggleButton value={'totalPayment'} variant="secondary">
-              Total paid
-            </ToggleButton>
-            <ToggleButton value={'totalInterest'} variant="secondary">
-              Total interest
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </div>
-      )}
-      <LineChart data={data} options={chartOptions} {...options} />
-    </>
-  )
+  return <LineChart data={data} options={chartOptions} {...options} />
 }
 
 Chart.propTypes = {
   payments: PropTypes.array,
-  showToggle: PropTypes.bool,
+  compare: PropTypes.string.isRequired,
   options: PropTypes.object
-}
-
-Chart.defaultProps = {
-  showToggle: true
 }
 
 export default Chart

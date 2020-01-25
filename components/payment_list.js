@@ -5,12 +5,35 @@ import Caret from './caret'
 import Chart from './payment_chart'
 import Col from 'react-bootstrap/Col'
 import PropTypes from 'prop-types'
-import React, {useCallback, useState} from 'react'
+import React, {useCallback, useEffect, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import css from 'styled-jsx/css'
 import {classNames, currency, simplifyCurrency} from '../shared/helpers'
 
-const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
+const Comparet = ({a, b, ...rest}) =>
+  a != null && a !== b ? (
+    <Caret
+      dir={a > b ? 'up' : 'down'}
+      color={a > b ? 'green' : 'red'}
+      {...rest}
+    />
+  ) : null
+
+Comparet.propTypes = {
+  a: PropTypes.object,
+  b: PropTypes.object
+}
+
+const Tile = ({
+  plans,
+  payment,
+  versus,
+  compare,
+  onCompare,
+  selected,
+  onSelect,
+  ...rest
+}) => {
   const {label, eligible, breakdown} = payment
 
   const [first] = breakdown
@@ -67,6 +90,13 @@ const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
     )
   }
 
+  const compareOptions = {
+    payment: 'Monthly payment',
+    endingBalance: 'Balance',
+    totalPayment: 'Total payment',
+    totalInterest: 'Total interest'
+  }
+
   return (
     <div className={classes} {...rest}>
       <div className="card-body p-2">
@@ -75,29 +105,40 @@ const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
             {selected ? (
               <div className="d-flex justify-content-between mb-3">
                 <DropdownButton
+                  onSelect={onSelect}
                   title={label}
                   variant="secondary"
-                  size="sm"
-                  onSelect={onSelect}>
+                  size="sm">
                   {plans
                     .filter(p => p.eligible)
-                    .map(({label}) => (
-                      <Dropdown.Item eventKey={label} key={label}>
-                        {label}
+                    .map(({label: key}) => (
+                      <Dropdown.Item
+                        eventKey={key}
+                        key={key}
+                        active={key === label}>
+                        {key}
                       </Dropdown.Item>
                     ))}
                 </DropdownButton>
                 <DropdownButton
+                  onSelect={onCompare}
                   className={chartSelectClass}
                   title={
                     <>
                       <ChartImg width="16px" />
-                      Monthly payment
+                      {compareOptions[compare]}
                     </>
                   }
                   variant="secondary"
                   size="sm">
-                  <Dropdown.Item>Monthly payment</Dropdown.Item>
+                  {Object.entries(compareOptions).map(([key, value]) => (
+                    <Dropdown.Item
+                      key={key}
+                      eventKey={key}
+                      active={key === compare}>
+                      {value}
+                    </Dropdown.Item>
+                  ))}
                 </DropdownButton>
                 {selectStyles}
               </div>
@@ -115,36 +156,22 @@ const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
               </div>
               <div className="text-center p-2 flex-fill">
                 <h5>
-                  {vsBreakdown && vsBreakdown.length !== breakdown.length ? (
-                    <Caret
-                      className={className}
-                      dir={
-                        vsBreakdown.length > breakdown.length ? 'up' : 'down'
-                      }
-                      color={
-                        vsBreakdown.length > breakdown.length ? 'green' : 'red'
-                      }
-                    />
-                  ) : null}
+                  <Comparet
+                    a={vsBreakdown && vsBreakdown.length}
+                    b={breakdown.length}
+                    className={className}
+                  />
                   {Math.round(breakdown.length / 12)}
                 </h5>
                 <span className="small">years</span>
               </div>
               <div className="text-center border-left p-2 flex-fill">
                 <h5>
-                  {vsLast && vsLast.totalPayment !== last.totalPayment ? (
-                    <Caret
-                      className={className}
-                      dir={
-                        vsLast.totalPayment > last.totalPayment ? 'up' : 'down'
-                      }
-                      color={
-                        vsLast.totalPayment > last.totalPayment
-                          ? 'green'
-                          : 'red'
-                      }
-                    />
-                  ) : null}
+                  <Comparet
+                    a={vsLast && vsLast.totalPayment}
+                    b={last.totalPayment}
+                    className={className}
+                  />
                   {simplifyCurrency(last.totalPayment)}
                 </h5>
                 <span className="small">total payment</span>
@@ -154,7 +181,7 @@ const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
           <Col xs={12} md={6} className="chart mb-n2">
             <Chart
               payments={[payment, versus].filter(Boolean)}
-              showToggle={false}
+              compare={compare}
               options={{height: 100}}
             />
           </Col>
@@ -175,11 +202,13 @@ const Tile = ({plans, payment, versus, selected, onSelect, ...rest}) => {
 }
 
 Tile.propTypes = {
+  compare: PropTypes.string,
+  onCompare: PropTypes.func,
+  onSelect: PropTypes.func,
+  payment: PropTypes.object,
   plans: PropTypes.array,
   selected: PropTypes.bool,
-  versus: PropTypes.object,
-  payment: PropTypes.object,
-  onSelect: PropTypes.func
+  versus: PropTypes.object
 }
 
 const PaymentList = ({payments}) => {
@@ -189,7 +218,18 @@ const PaymentList = ({payments}) => {
     [payments, setSelected]
   )
 
+  const [compare, setCompare] = useState('payment')
+  const onCompare = useCallback(setCompare, [compare, setCompare])
+
   const eligible = payments.filter(p => p.eligible)
+
+  // If eligible payments change, then we have to reset selected payment as
+  // currently selected may become non-eligible.
+  useEffect(() => {
+    if (!eligible.find(p => p.label === selected.label)) {
+      setSelected(eligible[0])
+    }
+  }, [eligible, selected, setSelected])
 
   return (
     <>
@@ -205,6 +245,8 @@ const PaymentList = ({payments}) => {
           selected={true}
           plans={payments}
           onSelect={onSelect}
+          compare={compare}
+          onCompare={onCompare}
         />
         {payments.map(
           r =>
@@ -214,6 +256,7 @@ const PaymentList = ({payments}) => {
                 payment={r}
                 versus={selected}
                 plans={payments}
+                compare={compare}
               />
             )
         )}
