@@ -79,7 +79,7 @@ const Tile = ({payment, versus, compare, ...rest}) => {
               <div className="text-center p-2 flex-fill">
                 <h5>
                   <Comparet
-                    a={vsBreakdown && vsBreakdown.length}
+                    a={versus && vsBreakdown.length}
                     b={breakdown.length}
                     className={className}
                   />
@@ -90,7 +90,7 @@ const Tile = ({payment, versus, compare, ...rest}) => {
               <div className="text-center border-left p-2 flex-fill">
                 <h5>
                   <Comparet
-                    a={vsLast && vsLast.totalPayment}
+                    a={versus && vsLast.totalPayment}
                     b={last.totalPayment}
                     className={className}
                   />
