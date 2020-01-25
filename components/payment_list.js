@@ -31,9 +31,10 @@ const Tile = ({payment, versus, compare, ...rest}) => {
   const [first] = breakdown
   const last = breakdown[breakdown.length - 1]
 
-  let vsLast, vsBreakdown
+  let vsFirst, vsLast, vsBreakdown
   if (versus) {
     vsBreakdown = versus.breakdown
+    vsFirst = vsBreakdown[0]
     vsLast = vsBreakdown[vsBreakdown.length - 1]
     payment.color = '#7b2995'
     versus.color = '#f19a9b'
@@ -68,15 +69,20 @@ const Tile = ({payment, versus, compare, ...rest}) => {
           <Col md={6}>
             <h6 className="card-title mt-2 font-weight-bold">{label}</h6>
             <div className="card-text d-flex flex-row mt-2">
-              <div className="text-center border-right p-2 flex-fill">
+              <div className="text-center border-right py-2">
                 <h5>
+                  <Comparet
+                    a={versus && vsFirst.payment}
+                    b={first.payment}
+                    className={className}
+                  />
                   {first.payment === last.payment
                     ? currency(first.payment)
                     : `${currency(first.payment)} - ${currency(last.payment)}`}
                 </h5>
                 <span className="small">per month</span>
               </div>
-              <div className="text-center p-2 flex-fill">
+              <div className="text-center py-2">
                 <h5>
                   <Comparet
                     a={versus && vsBreakdown.length}
@@ -87,7 +93,7 @@ const Tile = ({payment, versus, compare, ...rest}) => {
                 </h5>
                 <span className="small">years</span>
               </div>
-              <div className="text-center border-left p-2 flex-fill">
+              <div className="text-center border-left py-2">
                 <h5>
                   <Comparet
                     a={versus && vsLast.totalPayment}
@@ -111,8 +117,16 @@ const Tile = ({payment, versus, compare, ...rest}) => {
       </div>
       {styles}
       <style jsx>{`
-        .card-text > div {
-          width: calc(1 / 3 * 100%);
+        .card-text > div:first-child {
+          width: 40%;
+        }
+
+        .card-text > div:nth-child(2) {
+          width: 30%;
+        }
+
+        .card-text > div:last-child {
+          width: 30%;
         }
 
         h5 {
@@ -130,7 +144,8 @@ Tile.propTypes = {
 }
 
 const PaymentList = ({payments}) => {
-  const [selected, setSelected] = useState(payments[0])
+  const eligible = payments.filter(p => p.eligible)
+  const [selected, setSelected] = useState(eligible[0])
   const onSelect = useCallback(
     label => setSelected(payments.find(r => r.label === label)),
     [payments, setSelected]
@@ -139,15 +154,13 @@ const PaymentList = ({payments}) => {
   const [compare, setCompare] = useState('payment')
   const onCompare = useCallback(setCompare, [compare, setCompare])
 
-  const eligible = payments.filter(p => p.eligible)
-
-  // If eligible payments change, then we have to reset selected payment as
-  // currently selected may become non-eligible.
-  useEffect(() => {
-    if (!eligible.find(p => p.label === selected.label)) {
-      setSelected(eligible[0])
-    }
-  }, [eligible, selected, setSelected])
+  useEffect(
+    () =>
+      setSelected(
+        eligible.find(p => p.label === selected.label) || eligible[0]
+      ),
+    [eligible, selected, setSelected]
+  )
 
   const {className: chartSelectClass, styles: selectStyles} = css.resolve`
     .dropdown {
@@ -224,13 +237,8 @@ const PaymentList = ({payments}) => {
         {payments.map(
           r =>
             r.label !== selected.label && (
-              <div className="border-bottom">
-                <Tile
-                  key={r.label}
-                  payment={r}
-                  versus={selected}
-                  compare={compare}
-                />
+              <div key={r.label} className="border-bottom">
+                <Tile payment={r} versus={selected} compare={compare} />
               </div>
             )
         )}

@@ -1,7 +1,7 @@
 import {
   MONTHS,
   fixedRateRepayment,
-  getExtendedLoanTerm,
+  getLoanTerm,
   graduatedRepayment,
   icrBasedRepayment,
   incomeBasedRepayment,
@@ -59,6 +59,7 @@ const Plans = {
 export const RepaymentEligible = {
   STANDARD_FIXED: () => true,
   FIXED_EXTENDED: loan =>
+    loan.balance >= 30000 &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -69,7 +70,9 @@ export const RepaymentEligible = {
       'DIRECT_PLUS_CONSOLIDATED',
       'DIRECT_CONSOLIDATED_SUBSIDIZED',
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
-      'FFEL_CONSOLIDATED'
+      'FFEL_CONSOLIDATED',
+      'FFEL_PRO',
+      'FFEL_PARENTS'
     ].includes(loan.type),
   GRADUATED: loan =>
     [
@@ -87,6 +90,7 @@ export const RepaymentEligible = {
       'FFEL_PARENTS'
     ].includes(loan.type),
   GRADUATED_EXTENDED: loan =>
+    loan.balance >= 30000 &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -97,7 +101,9 @@ export const RepaymentEligible = {
       'DIRECT_PLUS_CONSOLIDATED',
       'DIRECT_CONSOLIDATED_SUBSIDIZED',
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
-      'FFEL_CONSOLIDATED'
+      'FFEL_CONSOLIDATED',
+      'FFEL_PRO',
+      'FFEL_PARENTS'
     ].includes(loan.type),
   INCOME_BASED_REPAY: (loan, income) =>
     partialFinancialHardship(loan, income, 0.15) &&
@@ -159,22 +165,22 @@ export const RepaymentPlans = {
   STANDARD_FIXED: loan => ({
     label: 'Standard Fixed',
     eligible: isPlanEligible(Plans.STANDARD_FIXED, loan),
-    ...fixedRateRepayment(loan)
+    ...fixedRateRepayment(loan, getLoanTerm(loan))
   }),
   FIXED_EXTENDED: loan => ({
     label: 'Fixed Extended',
     eligible: isPlanEligible(Plans.FIXED_EXTENDED, loan),
-    ...fixedRateRepayment(loan, getExtendedLoanTerm(loan))
+    ...fixedRateRepayment(loan, 25)
   }),
   GRADUATED: loan => ({
     label: 'Graduated',
     eligible: isPlanEligible(Plans.GRADUATED, loan),
-    ...graduatedRepayment(loan)
+    ...graduatedRepayment(loan, getLoanTerm(loan))
   }),
   GRADUATED_EXTENDED: loan => ({
     label: 'Graduated Extended',
     eligible: isPlanEligible(Plans.GRADUATED_EXTENDED, loan),
-    ...graduatedRepayment(loan, getExtendedLoanTerm(loan))
+    ...graduatedRepayment(loan, 25)
   }),
   INCOME_BASED_REPAY: (loan, income) => {
     const {payment, breakdown} = incomeBasedRepayment(loan, income)

@@ -38,7 +38,7 @@ const Home = () => {
     return {...state, ...data}
   }
   const [income, setIncome] = useReducer(incomeReducer, {
-    agi: 20000,
+    agi: 30000,
     dependents: 1,
     state: States.LOWER_48,
     filing: 'SINGLE',
