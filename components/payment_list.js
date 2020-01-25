@@ -9,7 +9,7 @@ import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import css from 'styled-jsx/css'
-import {classNames, currency, simplifyCurrency} from '../shared/helpers'
+import {currency, simplifyCurrency} from '../shared/helpers'
 
 const Comparet = ({a, b, ...rest}) =>
   a != null && a !== b ? (
@@ -48,16 +48,11 @@ const Tile = ({payment, versus, compare, ...rest}) => {
     }
   `
 
-  const classes = classNames({
-    'p-1': 1,
-    'bg-light': !eligible
-  })
-
   if (!eligible) {
     return (
-      <div className={classes}>
+      <div className="bg-light p-1">
         <div className="card-body p-2">
-          <h6 className="card-title font-weight-bold">{label}</h6>
+          <h6 className="card-title mt-2 font-weight-bold">{label}</h6>
           <div className="card-text">
             Your loan is not elgible for this repayment plan
           </div>
@@ -67,11 +62,11 @@ const Tile = ({payment, versus, compare, ...rest}) => {
   }
 
   return (
-    <div className={classes} {...rest}>
+    <div className="p-1" {...rest}>
       <div className="card-body p-2">
         <Row>
           <Col md={6}>
-            <h6 className="card-title font-weight-bold">{label}</h6>
+            <h6 className="card-title mt-2 font-weight-bold">{label}</h6>
             <div className="card-text d-flex flex-row mt-2">
               <div className="text-center border-right p-2 flex-fill">
                 <h5>
@@ -224,7 +219,7 @@ const PaymentList = ({payments}) => {
       </div>
       <div className="mx-n3 mx-sm-auto">
         <div className="card shadow position-sticky sticky-top">
-          <Tile payment={selected} plans={payments} compare={compare} />
+          <Tile payment={selected} compare={compare} />
         </div>
         {payments.map(
           r =>
@@ -234,7 +229,6 @@ const PaymentList = ({payments}) => {
                   key={r.label}
                   payment={r}
                   versus={selected}
-                  plans={payments}
                   compare={compare}
                 />
               </div>
