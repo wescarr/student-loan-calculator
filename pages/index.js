@@ -3,7 +3,6 @@ import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
-import Jumbotron from 'react-bootstrap/Jumbotron'
 import LoanList from '../components/loan_list'
 import Nav from 'react-bootstrap/Nav'
 import PaymentList from '../components/payment_list'
@@ -149,37 +148,35 @@ const Home = () => {
                 </div>
               )}
             </div>
-          </Col>
-        </Row>
-        <Row className="justify-content-center">
-          <Col key="repayments" md={6} className="repayments">
-            {isEligble ? (
-              <>
-                <PaymentList
-                  payments={repayments}
-                  selected={selectedPayments}
-                  onSelect={onPaymentSelect}
-                />
-              </>
-            ) : (
-              <Jumbotron className="m-5">
+            {!isEligble && (
+              <div className="my-5 pt-4 text-center border-top lead">
                 {isUnkownLoan && (
                   <>
                     <p>
-                      You can retrieve your loan information from the National
-                      Student Loan Data System or by contacting your loan
-                      holder.
+                      You can retrieve your loan information from the{' '}
+                      <strong>National Student Loan Data System</strong> or by
+                      contacting your loan holder.
                     </p>
                     <Button href="https://nslds.ed.gov">Learn more</Button>
                   </>
                 )}
-                {isPrivateLoan && (
-                  <p>
+                {isPrivateLoan &&
+                  `
                     You will need to contact your loan holder for the specific
                     terms of your repayment plan.
-                  </p>
-                )}
-              </Jumbotron>
+                `}
+              </div>
+            )}
+          </Col>
+        </Row>
+        <Row className="justify-content-center">
+          <Col key="repayments" md={6} className="repayments">
+            {isEligble && (
+              <PaymentList
+                payments={repayments}
+                selected={selectedPayments}
+                onSelect={onPaymentSelect}
+              />
             )}
           </Col>
         </Row>

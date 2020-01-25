@@ -1,4 +1,5 @@
 import ChartImg from '../images/chart-area.svg'
+import ButtonToolbar from 'react-bootstrap/ButtonToolbar'
 import Dropdown from 'react-bootstrap/Dropdown'
 import DropdownButton from 'react-bootstrap/DropdownButton'
 import Caret from './caret'
@@ -24,16 +25,7 @@ Comparet.propTypes = {
   b: PropTypes.object
 }
 
-const Tile = ({
-  plans,
-  payment,
-  versus,
-  compare,
-  onCompare,
-  selected,
-  onSelect,
-  ...rest
-}) => {
+const Tile = ({payment, versus, compare, ...rest}) => {
   const {label, eligible, breakdown} = payment
 
   const [first] = breakdown
@@ -56,24 +48,8 @@ const Tile = ({
     }
   `
 
-  const {className: chartSelectClass, styles: selectStyles} = css.resolve`
-    .dropdown :global(.dropdown-toggle::after) {
-      display: none;
-    }
-
-    .dropdown :global(svg) {
-      fill: #fff;
-      margin-right: 5px;
-    }
-  `
-
   const classes = classNames({
-    card: selected,
     'p-1': 1,
-    shadow: selected,
-    'border-bottom': !selected,
-    'position-sticky': selected,
-    'sticky-top': selected,
     'bg-light': !eligible
   })
 
@@ -90,61 +66,12 @@ const Tile = ({
     )
   }
 
-  const compareOptions = {
-    payment: 'Monthly payment',
-    endingBalance: 'Balance',
-    totalPayment: 'Total payment',
-    totalInterest: 'Total interest'
-  }
-
   return (
     <div className={classes} {...rest}>
       <div className="card-body p-2">
         <Row>
           <Col md={6}>
-            {selected ? (
-              <div className="d-flex justify-content-between mb-3">
-                <DropdownButton
-                  onSelect={onSelect}
-                  title={label}
-                  variant="secondary"
-                  size="sm">
-                  {plans
-                    .filter(p => p.eligible)
-                    .map(({label: key}) => (
-                      <Dropdown.Item
-                        eventKey={key}
-                        key={key}
-                        active={key === label}>
-                        {key}
-                      </Dropdown.Item>
-                    ))}
-                </DropdownButton>
-                <DropdownButton
-                  onSelect={onCompare}
-                  className={chartSelectClass}
-                  title={
-                    <>
-                      <ChartImg width="16px" />
-                      {compareOptions[compare]}
-                    </>
-                  }
-                  variant="secondary"
-                  size="sm">
-                  {Object.entries(compareOptions).map(([key, value]) => (
-                    <Dropdown.Item
-                      key={key}
-                      eventKey={key}
-                      active={key === compare}>
-                      {value}
-                    </Dropdown.Item>
-                  ))}
-                </DropdownButton>
-                {selectStyles}
-              </div>
-            ) : (
-              <h6 className="card-title font-weight-bold">{label}</h6>
-            )}
+            <h6 className="card-title font-weight-bold">{label}</h6>
             <div className="card-text d-flex flex-row mt-2">
               <div className="text-center border-right p-2 flex-fill">
                 <h5>
@@ -203,11 +130,7 @@ const Tile = ({
 
 Tile.propTypes = {
   compare: PropTypes.string,
-  onCompare: PropTypes.func,
-  onSelect: PropTypes.func,
   payment: PropTypes.object,
-  plans: PropTypes.array,
-  selected: PropTypes.bool,
   versus: PropTypes.object
 }
 
@@ -231,6 +154,24 @@ const PaymentList = ({payments}) => {
     }
   }, [eligible, selected, setSelected])
 
+  const {className: chartSelectClass, styles: selectStyles} = css.resolve`
+    .dropdown {
+      margin-left: 10px;
+    }
+
+    .dropdown :global(svg) {
+      fill: #fff;
+      margin-right: 5px;
+    }
+  `
+
+  const compareOptions = {
+    payment: 'Monthly payment',
+    endingBalance: 'Balance',
+    totalPayment: 'Total payment',
+    totalInterest: 'Total interest'
+  }
+
   return (
     <>
       <p className="lead mt-2 text-center">
@@ -239,25 +180,64 @@ const PaymentList = ({payments}) => {
         <br />
         Choose a plan below to see how it compares to all the others.
       </p>
+      <div className="mb-3">
+        <ButtonToolbar className="justify-content-center">
+          <DropdownButton
+            onSelect={onSelect}
+            title={selected.label}
+            variant="secondary">
+            {eligible.map(({label: key}) => (
+              <Dropdown.Item
+                eventKey={key}
+                key={key}
+                active={key === selected.label}>
+                {key}
+              </Dropdown.Item>
+            ))}
+          </DropdownButton>{' '}
+          <DropdownButton
+            onSelect={onCompare}
+            className={chartSelectClass}
+            title={
+              <>
+                <ChartImg width="16px" />
+                {compareOptions[compare]}
+              </>
+            }
+            variant="secondary">
+            {Object.entries(compareOptions).map(([key, value]) => (
+              <Dropdown.Item key={key} eventKey={key} active={key === compare}>
+                {value}
+              </Dropdown.Item>
+            ))}
+          </DropdownButton>
+        </ButtonToolbar>
+        {selectStyles}
+        <style jsx>
+          {`
+            div {
+              position: relative;
+              z-index: 1021; // One higher than sticky index
+            }
+          `}
+        </style>
+      </div>
       <div className="mx-n3 mx-sm-auto">
-        <Tile
-          payment={selected}
-          selected={true}
-          plans={payments}
-          onSelect={onSelect}
-          compare={compare}
-          onCompare={onCompare}
-        />
+        <div className="card shadow position-sticky sticky-top">
+          <Tile payment={selected} plans={payments} compare={compare} />
+        </div>
         {payments.map(
           r =>
             r.label !== selected.label && (
-              <Tile
-                key={r.label}
-                payment={r}
-                versus={selected}
-                plans={payments}
-                compare={compare}
-              />
+              <div className="border-bottom">
+                <Tile
+                  key={r.label}
+                  payment={r}
+                  versus={selected}
+                  plans={payments}
+                  compare={compare}
+                />
+              </div>
             )
         )}
       </div>

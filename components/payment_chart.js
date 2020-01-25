@@ -46,7 +46,6 @@ const chartOptions = {
       {
         gridLines: {display: false},
         ticks: {
-          // padding: -30,
           beginAtZero: true,
           callback: (value, index, values) =>
             // Show alternate values, starting with labels > 0
@@ -94,11 +93,13 @@ const getChartData = (repayments, attr) => {
   return data
 }
 
-const Chart = ({payments, compare, options}) => {
-  const data = getChartData(payments, compare)
-
-  return <LineChart data={data} options={chartOptions} {...options} />
-}
+const Chart = ({payments, compare, options}) => (
+  <LineChart
+    data={getChartData(payments, compare)}
+    options={chartOptions}
+    {...options}
+  />
+)
 
 Chart.propTypes = {
   payments: PropTypes.array,
