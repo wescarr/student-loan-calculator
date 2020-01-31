@@ -21,8 +21,8 @@ const Comparet = ({a, b, ...rest}) =>
   ) : null
 
 Comparet.propTypes = {
-  a: PropTypes.object,
-  b: PropTypes.object
+  a: PropTypes.number,
+  b: PropTypes.number
 }
 
 const Tile = ({payment, versus, compare, ...rest}) => {

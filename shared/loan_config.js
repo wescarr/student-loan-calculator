@@ -59,7 +59,7 @@ const Plans = {
 export const RepaymentEligible = {
   STANDARD_FIXED: () => true,
   FIXED_EXTENDED: loan =>
-    loan.balance >= 30000 &&
+    loan.balance > 30000 &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -90,7 +90,7 @@ export const RepaymentEligible = {
       'FFEL_PARENTS'
     ].includes(loan.type),
   GRADUATED_EXTENDED: loan =>
-    loan.balance >= 30000 &&
+    loan.balance > 30000 &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
