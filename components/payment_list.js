@@ -1,13 +1,21 @@
-import ChartImg from '../images/chart-area.svg'
+import AlignImg from '../images/align-left.svg'
+import BadgeImg from '../images/badge-percent.svg'
+import BandaidImg from '../images/band-aid.svg'
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar'
-import Dropdown from 'react-bootstrap/Dropdown'
-import DropdownButton from 'react-bootstrap/DropdownButton'
 import Caret from './caret'
 import Chart from './payment_chart'
+import ChartImg from '../images/chart-area.svg'
 import Col from 'react-bootstrap/Col'
+import Dropdown from 'react-bootstrap/Dropdown'
+import DropdownButton from 'react-bootstrap/DropdownButton'
+import GripImg from '../images/grip-lines.svg'
+import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useState} from 'react'
 import Row from 'react-bootstrap/Row'
+import ToggleButton from 'react-bootstrap/ToggleButton'
+import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
+import Tooltip from 'react-bootstrap/Tooltip'
 import css from 'styled-jsx/css'
 import {currency, simplifyCurrency} from '../shared/helpers'
 
@@ -25,8 +33,41 @@ Comparet.propTypes = {
   b: PropTypes.number
 }
 
-const Tile = ({payment, versus, compare, ...rest}) => {
-  const {label, eligible, breakdown} = payment
+const Badge = ({type}) => {
+  switch (type) {
+    case 'IDR':
+      return (
+        <OverlayTrigger
+          overlay={
+            <Tooltip>
+              <small>Payments are based on your income</small>
+            </Tooltip>
+          }>
+          <BadgeImg width="19px" fill="#999" />
+        </OverlayTrigger>
+      )
+    case 'PFH':
+      return (
+        <OverlayTrigger
+          overlay={
+            <Tooltip>
+              <small>Requires partial financial hardship</small>
+            </Tooltip>
+          }>
+          <BandaidImg height="19px" fill="#999" />
+        </OverlayTrigger>
+      )
+  }
+
+  return null
+}
+
+Badge.propTypes = {
+  type: PropTypes.string
+}
+
+const Tile = ({payment, versus, compare, expanded, ...rest}) => {
+  const {label, eligible, breakdown, description, requirements = []} = payment
 
   const [first] = breakdown
   const last = breakdown[breakdown.length - 1]
@@ -67,7 +108,12 @@ const Tile = ({payment, versus, compare, ...rest}) => {
       <div className="card-body p-2">
         <Row>
           <Col md={6}>
-            <h6 className="card-title mt-2 font-weight-bold">{label}</h6>
+            <h6 className="card-title mt-2 font-weight-bold">
+              {label}
+              {requirements.map(r => (
+                <Badge key={r} type={r} />
+              ))}
+            </h6>
             <div className="card-text d-flex flex-row mt-2">
               <div className="text-center border-right py-2">
                 <h5>
@@ -114,9 +160,22 @@ const Tile = ({payment, versus, compare, ...rest}) => {
             />
           </Col>
         </Row>
+        {expanded && (
+          <Row>
+            <Col>
+              <p className="small m-0 mt-2 bg-light p-2 rounded">
+                {description}
+              </p>
+            </Col>
+          </Row>
+        )}
       </div>
       {styles}
       <style jsx>{`
+        .card-title > :global(svg) {
+          margin-left: 7px;
+        }
+
         .card-text > div:first-child {
           width: 40%;
         }
@@ -140,7 +199,8 @@ const Tile = ({payment, versus, compare, ...rest}) => {
 Tile.propTypes = {
   compare: PropTypes.string,
   payment: PropTypes.object,
-  versus: PropTypes.object
+  versus: PropTypes.object,
+  expanded: PropTypes.bool
 }
 
 const PaymentList = ({payments}) => {
@@ -161,6 +221,9 @@ const PaymentList = ({payments}) => {
       ),
     [eligible, selected, setSelected]
   )
+
+  const [detail, setDetail] = useState(true)
+  const onDetailChange = useCallback(value => setDetail(value), [setDetail])
 
   const {className: chartSelectClass, styles: selectStyles} = css.resolve`
     .dropdown {
@@ -202,7 +265,7 @@ const PaymentList = ({payments}) => {
                 {key}
               </Dropdown.Item>
             ))}
-          </DropdownButton>{' '}
+          </DropdownButton>
           <DropdownButton
             onSelect={onCompare}
             className={chartSelectClass}
@@ -219,6 +282,19 @@ const PaymentList = ({payments}) => {
               </Dropdown.Item>
             ))}
           </DropdownButton>
+          <ToggleButtonGroup
+            value={detail}
+            onChange={onDetailChange}
+            type="radio"
+            name="detail"
+            className="ml-2">
+            <ToggleButton value={false} variant="secondary">
+              <GripImg width="16px" fill="#fff" />
+            </ToggleButton>
+            <ToggleButton value={true} variant="secondary">
+              <AlignImg width="16px" fill="#fff" />
+            </ToggleButton>
+          </ToggleButtonGroup>
         </ButtonToolbar>
         {selectStyles}
         <style jsx>
@@ -232,13 +308,18 @@ const PaymentList = ({payments}) => {
       </div>
       <div className="mx-n3 mx-sm-auto">
         <div className="card shadow position-sticky sticky-top">
-          <Tile payment={selected} compare={compare} />
+          <Tile payment={selected} compare={compare} expanded={detail} />
         </div>
         {payments.map(
           r =>
             r.label !== selected.label && (
               <div key={r.label} className="border-bottom">
-                <Tile payment={r} versus={selected} compare={compare} />
+                <Tile
+                  payment={r}
+                  versus={selected}
+                  compare={compare}
+                  expanded={detail}
+                />
               </div>
             )
         )}
