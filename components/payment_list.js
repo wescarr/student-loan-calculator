@@ -43,7 +43,7 @@ const Badge = ({type}) => {
               <small>Payments are based on your income</small>
             </Tooltip>
           }>
-          <BadgeImg width="19px" fill="#999" />
+          <BadgeImg height="19px" fill="#999" />
         </OverlayTrigger>
       )
     case 'PFH':
