@@ -101,7 +101,7 @@ const Home = () => {
       </Head>
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={4}>
+          <Col sm={8} md={8} lg={6} xl={5}>
             <div className="text-center mt-3 mb-4">
               <h1 className="h2">Student Loan Calculator</h1>
               <p className="lead">
@@ -170,7 +170,13 @@ const Home = () => {
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col key="repayments" md={6} className="repayments">
+          <Col
+            key="repayments"
+            sm={12}
+            md={10}
+            lg={8}
+            xl={6}
+            className="repayments">
             {isEligble && (
               <PaymentList
                 payments={repayments}

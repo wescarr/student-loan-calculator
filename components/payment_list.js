@@ -108,8 +108,8 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
       <div className="card-body p-2">
         <Row>
           <Col md={6}>
-            <h6 className="card-title mt-2 font-weight-bold">
-              {label}
+            <h6 className="card-title d-flex mt-2 font-weight-bold">
+              <span className="flex-grow-1">{label}</span>
               {requirements.map(r => (
                 <Badge key={r} type={r} />
               ))}
@@ -225,14 +225,15 @@ const PaymentList = ({payments}) => {
   const [detail, setDetail] = useState(true)
   const onDetailChange = useCallback(value => setDetail(value), [setDetail])
 
-  const {className: chartSelectClass, styles: selectStyles} = css.resolve`
-    .dropdown {
-      margin-left: 10px;
-    }
-
+  const {className: dropdownClass, styles: dropdownStyle} = css.resolve`
     .dropdown :global(svg) {
       fill: #fff;
       margin-right: 5px;
+    }
+
+    .dropdown :global(.btn) {
+      display: block;
+      width: 100%;
     }
   `
 
@@ -252,11 +253,12 @@ const PaymentList = ({payments}) => {
         Choose a plan below to see how it compares to all the others.
       </p>
       <div className="mb-3">
-        <ButtonToolbar className="justify-content-center">
+        <ButtonToolbar className="justify-content-center d-block d-sm-flex">
           <DropdownButton
             onSelect={onSelect}
             title={selected.label}
-            variant="secondary">
+            variant="secondary"
+            className={`d-block d-sm-inline-block mx-0 mb-2 mr-sm-2 ${dropdownClass}`}>
             {eligible.map(({label: key}) => (
               <Dropdown.Item
                 eventKey={key}
@@ -268,7 +270,7 @@ const PaymentList = ({payments}) => {
           </DropdownButton>
           <DropdownButton
             onSelect={onCompare}
-            className={chartSelectClass}
+            className={`mx-0 mb-2 mr-sm-2 ${dropdownClass}`}
             title={
               <>
                 <ChartImg width="16px" />
@@ -287,7 +289,7 @@ const PaymentList = ({payments}) => {
             onChange={onDetailChange}
             type="radio"
             name="detail"
-            className="ml-2">
+            className="d-block text-center">
             <ToggleButton value={false} variant="secondary">
               <GripImg width="16px" fill="#fff" />
             </ToggleButton>
@@ -296,7 +298,7 @@ const PaymentList = ({payments}) => {
             </ToggleButton>
           </ToggleButtonGroup>
         </ButtonToolbar>
-        {selectStyles}
+        {dropdownStyle}
         <style jsx>
           {`
             div {
