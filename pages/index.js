@@ -127,13 +127,13 @@ const Home = () => {
               </Nav>
               <div className="pt-3 px-2">
                 {nav === 'income' ? (
-                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                  <div className="shadow border rounded px-3 pt-3 pb-1 mb-4">
                     <IncomeForm income={income} onChange={setIncome} />
                   </div>
                 ) : nav === 'loan' ? (
                   <LoanList loans={loans} income={income} onChange={setLoans} />
                 ) : (
-                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                  <div className="shadow border rounded px-3 pt-3 pb-1 mb-4">
                     <Settings rates={income.rates} onChange={onRatesChange} />
                   </div>
                 )}

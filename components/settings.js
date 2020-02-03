@@ -28,7 +28,7 @@ const Settings = ({onChange, rates, ...props}) => {
   return (
     <Form {...props}>
       <Form.Row>
-        <Col xs={12}>
+        <Col xs={12} sm={6}>
           <Form.Group>
             <Form.Label>Annual income growth</Form.Label>
             <InputGroup>
