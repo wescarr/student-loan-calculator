@@ -181,11 +181,11 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
         }
 
         .card-text > div:nth-child(2) {
-          width: 30%;
+          width: 25%;
         }
 
         .card-text > div:last-child {
-          width: 30%;
+          width: 35%;
         }
 
         h5 {
