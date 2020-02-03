@@ -28,7 +28,7 @@ const IncomeForm = ({onChange, income, ...props}) => {
   return (
     <Form {...props}>
       <Form.Row>
-        <Col>
+        <Col xs={12}>
           <Form.Group>
             <Form.Label>Adjusted gross income</Form.Label>
             <InputGroup>

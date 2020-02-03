@@ -43,7 +43,7 @@ const Badge = ({type}) => {
               <small>Payments are based on your income</small>
             </Tooltip>
           }>
-          <BadgeImg height="19px" fill="#999" />
+          <BadgeImg height="22px" fill="#999" />
         </OverlayTrigger>
       )
     case 'PFH':
@@ -54,7 +54,7 @@ const Badge = ({type}) => {
               <small>Requires partial financial hardship</small>
             </Tooltip>
           }>
-          <BandaidImg height="19px" fill="#999" />
+          <BandaidImg height="22px" fill="#999" />
         </OverlayTrigger>
       )
   }
@@ -173,7 +173,7 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
       {styles}
       <style jsx>{`
         .card-title > :global(svg) {
-          margin-left: 7px;
+          margin-left: 10px;
         }
 
         .card-text > div:first-child {
