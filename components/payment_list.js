@@ -91,20 +91,37 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
   `
 
   // Determines if description is longer than 2 lines
-  const [moreText, setMoreText] = useState(false)
   const textRef = useRef(null)
-  useEffect(() => {
+  const [moreText, setMoreText] = useState(false)
+  const checkMoreText = useCallback(() => {
     const {scrollHeight, offsetHeight} = textRef.current || {}
-    if (scrollHeight > offsetHeight) {
-      setMoreText(true)
-    }
-  }, [description, textRef, setMoreText])
+    setMoreText(scrollHeight > offsetHeight)
+  }, [setMoreText])
 
+  // Toggle state for expanding/collapsing description
   const [textExpanded, setTextExpanded] = useState(false)
-  const onTextClick = useCallback(() => setTextExpanded(!textExpanded), [
-    textExpanded,
-    setTextExpanded
-  ])
+  const transition = useRef(false)
+  const onTextClick = useCallback(() => {
+    transition.current = true
+    setTextExpanded(!textExpanded)
+  }, [textExpanded, setTextExpanded])
+
+  // When the description changes, collapse it and recalc if it overflows once
+  // the transition finishes
+  useEffect(() => setTextExpanded(false), [description])
+  const onTransitionEnd = useCallback(() => {
+    if (!textExpanded) {
+      checkMoreText()
+    }
+    transition.current = false
+  }, [textExpanded, checkMoreText])
+
+  // Check for text overflow when description changes in collapsed state
+  useEffect(() => {
+    if (!(textExpanded || transition.current)) {
+      checkMoreText()
+    }
+  }, [description, checkMoreText, textExpanded])
 
   if (!eligible) {
     return (
@@ -183,6 +200,7 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
                 <p
                   ref={textRef}
                   className="description m-0 position-relative"
+                  onTransitionEnd={onTransitionEnd}
                   onClick={onTextClick}>
                   {description}{' '}
                   {!textExpanded && moreText && (
