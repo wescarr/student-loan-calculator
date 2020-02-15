@@ -35,7 +35,7 @@ const Summary = ({loan, onClick, onClose, ...props}) => {
         {LoanTypes[loan.type]}
         <br />
         {currency(loan.balance)} <span className="text-muted">at</span>{' '}
-        {loan.rate * 100}%
+        {formatFloat(loan.rate * 100)}%
       </div>
       <Close onClick={onRemove} title="Remove this loan" />
     </div>

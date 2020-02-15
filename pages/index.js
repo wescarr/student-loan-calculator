@@ -1,13 +1,11 @@
-import Chart from '../components/payment_chart'
 import Button from 'react-bootstrap/Button'
 import Col from 'react-bootstrap/Col'
 import Container from 'react-bootstrap/Container'
 import Head from 'next/head'
 import IncomeForm from '../components/income_form'
-import Jumbotron from 'react-bootstrap/Jumbotron'
 import LoanList from '../components/loan_list'
 import Nav from 'react-bootstrap/Nav'
-import PaymentTable from '../components/payment_table'
+import PaymentList from '../components/payment_list'
 import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import Settings from '../components/settings'
@@ -40,7 +38,7 @@ const Home = () => {
     return {...state, ...data}
   }
   const [income, setIncome] = useReducer(incomeReducer, {
-    agi: 20000,
+    agi: 30000,
     dependents: 1,
     state: States.LOWER_48,
     filing: 'SINGLE',
@@ -96,10 +94,14 @@ const Home = () => {
       <Head>
         <title>Student Loan Calculator</title>
         <link rel="icon" href="/favicon.ico" />
+        <link
+          href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap"
+          rel="stylesheet"
+        />
       </Head>
       <Container fluid>
         <Row className="justify-content-center">
-          <Col md={4}>
+          <Col sm={8} md={8} lg={6} xl={5}>
             <div className="text-center mt-3 mb-4">
               <h1 className="h2">Student Loan Calculator</h1>
               <p className="lead">
@@ -125,13 +127,13 @@ const Home = () => {
               </Nav>
               <div className="pt-3 px-2">
                 {nav === 'income' ? (
-                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                  <div className="shadow border rounded px-3 pt-3 pb-1 mb-4">
                     <IncomeForm income={income} onChange={setIncome} />
                   </div>
                 ) : nav === 'loan' ? (
                   <LoanList loans={loans} income={income} onChange={setLoans} />
                 ) : (
-                  <div className="bg-light rounded px-3 pt-3 pb-1">
+                  <div className="shadow border rounded px-3 pt-3 pb-1 mb-4">
                     <Settings rates={income.rates} onChange={onRatesChange} />
                   </div>
                 )}
@@ -146,42 +148,41 @@ const Home = () => {
                 </div>
               )}
             </div>
-          </Col>
-          <Col key="repayments" md={8} className="repayments">
-            {isEligble ? (
-              <>
-                {selectedPayments.length > 0 && (
-                  <Chart
-                    payments={repayments.filter(r =>
-                      selectedPayments.includes(r.label)
-                    )}
-                  />
-                )}
-                <PaymentTable
-                  payments={repayments}
-                  selected={selectedPayments}
-                  onSelect={onPaymentSelect}
-                />
-              </>
-            ) : (
-              <Jumbotron className="m-5">
+            {!isEligble && (
+              <div className="my-5 pt-4 text-center border-top lead">
                 {isUnkownLoan && (
                   <>
                     <p>
-                      You can retrieve your loan information from the National
-                      Student Loan Data System or by contacting your loan
-                      holder.
+                      You can retrieve your loan information from the{' '}
+                      <strong>National Student Loan Data System</strong> or by
+                      contacting your loan holder.
                     </p>
                     <Button href="https://nslds.ed.gov">Learn more</Button>
                   </>
                 )}
-                {isPrivateLoan && (
-                  <p>
+                {isPrivateLoan &&
+                  `
                     You will need to contact your loan holder for the specific
                     terms of your repayment plan.
-                  </p>
-                )}
-              </Jumbotron>
+                `}
+              </div>
+            )}
+          </Col>
+        </Row>
+        <Row className="justify-content-center">
+          <Col
+            key="repayments"
+            sm={12}
+            md={10}
+            lg={8}
+            xl={6}
+            className="repayments">
+            {isEligble && (
+              <PaymentList
+                payments={repayments}
+                selected={selectedPayments}
+                onSelect={onPaymentSelect}
+              />
             )}
           </Col>
         </Row>
@@ -190,6 +191,11 @@ const Home = () => {
       <style jsx>{`
         .bg-light.rounded-bottom {
           cursor: pointer;
+        }
+      `}</style>
+      <style jsx global>{`
+        body {
+          font-family: 'Roboto', sans-serif;
         }
       `}</style>
     </>

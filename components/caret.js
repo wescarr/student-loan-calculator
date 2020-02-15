@@ -1,25 +1,41 @@
 import PropTypes from 'prop-types'
 import React from 'react'
 
-const Caret = props => (
-  <div>
-    <style jsx>{`
-        div {
+const borders = {
+  up: ['top', 'right', 'bottom', 'left'],
+  down: ['bottom', 'right', 'top', 'left'],
+  right: ['left', 'top', 'right', 'bottom'],
+  left: ['right', 'top', 'left', 'bottom']
+}
+
+const Caret = props => {
+  const {dir, color, ...rest} = props
+  const seq = borders[dir]
+
+  return (
+    <span {...rest}>
+      <style jsx>{`
+        span {
           display: inline-block;
-          margin-left: 0.255em;
           vertical-align: 0.255em;
           content: '';
-          border-${props.dir === 'down' ? 'bottom' : 'top'}: 0.3em solid;
-          border-right: 0.3em solid transparent;
-          border-${props.dir === 'down' ? 'top' : 'bottom'}: 0;
-          border-left: 0.3em solid transparent;
+          border-${seq[0]}: ${color} 0.3em solid;
+          border-${seq[1]}: 0.3em solid transparent;
+          border-${seq[2]}: 0;
+          border-${seq[3]}: 0.3em solid transparent;
         }
       `}</style>
-  </div>
-)
+    </span>
+  )
+}
 
 Caret.propTypes = {
-  dir: PropTypes.string
+  dir: PropTypes.string,
+  color: PropTypes.string
+}
+
+Caret.defaultProps = {
+  color: '#333'
 }
 
 export default Caret

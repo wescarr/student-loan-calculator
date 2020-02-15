@@ -1,11 +1,9 @@
 import PropTypes from 'prop-types'
-import React, {useState} from 'react'
-import ToggleButton from 'react-bootstrap/ToggleButton'
-import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
+import React from 'react'
 import dynamic from 'next/dynamic'
 import {currency, hexToRgbA, simplifyCurrency} from '../shared/helpers'
 
-const BarChart = dynamic(import('react-chartjs-2').then(mod => mod.Bar))
+const LineChart = dynamic(import('react-chartjs-2').then(mod => mod.Line))
 
 const getYearBreakdown = (breakdown, attr) => {
   const years = []
@@ -17,15 +15,14 @@ const getYearBreakdown = (breakdown, attr) => {
 }
 
 const dataset = (label, data, bgColor) => ({
-  stack: label,
   label,
   data,
   fill: 'origin',
   lineTension: 0.1,
   borderColor: bgColor,
-  backgroundColor: hexToRgbA(bgColor, 0.8),
+  backgroundColor: hexToRgbA(bgColor, 0.1),
   hoverBackgroundColor: hexToRgbA(bgColor, 1),
-  borderWidth: 0,
+  borderWidth: 2,
   pointRadius: 0,
   pointHitRadius: 5,
   pointBackgroundColor: bgColor
@@ -36,21 +33,25 @@ const chartOptions = {
   scales: {
     xAxes: [
       {
+        gridLines: {display: false},
         ticks: {
-          callback: n => new Date().getFullYear() + parseInt(n) - 1,
+          display: false,
+          callback: n =>
+            n % 2 ? new Date().getFullYear() + parseInt(n) - 1 : '',
           min: 0
         }
       }
     ],
     yAxes: [
       {
+        gridLines: {display: false},
         ticks: {
           beginAtZero: true,
-          // Write simplified dollar values like "$10k" or "$1.2m"
-          callback: simplifyCurrency,
+          callback: (value, index, values) =>
+            // Show alternate values, starting with labels > 0
+            index % 2 === values.length % 2 ? simplifyCurrency(value) : '',
           min: 0
-        },
-        stacked: true
+        }
       }
     ]
   },
@@ -92,39 +93,18 @@ const getChartData = (repayments, attr) => {
   return data
 }
 
-const Chart = ({payments}) => {
-  const [compare, setCompare] = useState('payment')
-  const data = getChartData(payments, compare)
-
-  return (
-    <>
-      <div className="mt-4 mb-2 text-center">
-        <ToggleButtonGroup
-          type="radio"
-          name="chart_type"
-          value={compare}
-          onChange={setCompare}>
-          <ToggleButton value={'payment'} variant="secondary">
-            Monthly payment
-          </ToggleButton>
-          <ToggleButton value={'endingBalance'} variant="secondary">
-            Balance
-          </ToggleButton>
-          <ToggleButton value={'totalPayment'} variant="secondary">
-            Total paid
-          </ToggleButton>
-          <ToggleButton value={'totalInterest'} variant="secondary">
-            Total interest
-          </ToggleButton>
-        </ToggleButtonGroup>
-      </div>
-      <BarChart data={data} options={chartOptions} height={100} width={300} />
-    </>
-  )
-}
+const Chart = ({payments, compare, options}) => (
+  <LineChart
+    data={getChartData(payments, compare)}
+    options={chartOptions}
+    {...options}
+  />
+)
 
 Chart.propTypes = {
-  payments: PropTypes.array
+  payments: PropTypes.array,
+  compare: PropTypes.string.isRequired,
+  options: PropTypes.object
 }
 
 export default Chart

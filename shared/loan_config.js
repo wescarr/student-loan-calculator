@@ -1,7 +1,7 @@
 import {
   MONTHS,
   fixedRateRepayment,
-  getExtendedLoanTerm,
+  getLoanTerm,
   graduatedRepayment,
   icrBasedRepayment,
   incomeBasedRepayment,
@@ -59,6 +59,7 @@ const Plans = {
 export const RepaymentEligible = {
   STANDARD_FIXED: () => true,
   FIXED_EXTENDED: loan =>
+    loan.balance > 30000 &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -69,7 +70,9 @@ export const RepaymentEligible = {
       'DIRECT_PLUS_CONSOLIDATED',
       'DIRECT_CONSOLIDATED_SUBSIDIZED',
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
-      'FFEL_CONSOLIDATED'
+      'FFEL_CONSOLIDATED',
+      'FFEL_PRO',
+      'FFEL_PARENTS'
     ].includes(loan.type),
   GRADUATED: loan =>
     [
@@ -87,6 +90,7 @@ export const RepaymentEligible = {
       'FFEL_PARENTS'
     ].includes(loan.type),
   GRADUATED_EXTENDED: loan =>
+    loan.balance > 30000 &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -97,7 +101,9 @@ export const RepaymentEligible = {
       'DIRECT_PLUS_CONSOLIDATED',
       'DIRECT_CONSOLIDATED_SUBSIDIZED',
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
-      'FFEL_CONSOLIDATED'
+      'FFEL_CONSOLIDATED',
+      'FFEL_PRO',
+      'FFEL_PARENTS'
     ].includes(loan.type),
   INCOME_BASED_REPAY: (loan, income) =>
     partialFinancialHardship(loan, income, 0.15) &&
@@ -149,6 +155,14 @@ export const RepaymentEligible = {
     ].includes(loan.type)
 }
 
+export const RepaymentRequirements = {
+  INCOME_BASED_REPAY: ['IDR', 'PFH'],
+  INCOME_BASED_REPAY_NEW: ['IDR', 'PFH'],
+  INCOME_CONTINGENT_REPAY: ['IDR'],
+  PAY_AS_YOU_EARN: ['IDR', 'PFH'],
+  REVISED_PAY_AS_YOU_EARN: ['IDR']
+}
+
 export const isPlanEligible = (type, loan, income) =>
   RepaymentEligible[type](loan, income)
 
@@ -159,22 +173,30 @@ export const RepaymentPlans = {
   STANDARD_FIXED: loan => ({
     label: 'Standard Fixed',
     eligible: isPlanEligible(Plans.STANDARD_FIXED, loan),
-    ...fixedRateRepayment(loan)
+    description:
+      'You pay a fixed amount each month of atleast $50 for up to 10 years.',
+    ...fixedRateRepayment(loan, getLoanTerm(loan))
   }),
   FIXED_EXTENDED: loan => ({
     label: 'Fixed Extended',
     eligible: isPlanEligible(Plans.FIXED_EXTENDED, loan),
-    ...fixedRateRepayment(loan, getExtendedLoanTerm(loan))
+    description:
+      'You pay a fixed amount each month of atleast $50 for up to 25 years. You must have a loan balance of over $30K to qualify.',
+    ...fixedRateRepayment(loan, 25)
   }),
   GRADUATED: loan => ({
     label: 'Graduated',
     eligible: isPlanEligible(Plans.GRADUATED, loan),
-    ...graduatedRepayment(loan)
+    description:
+      'You make monthly payments that increase every 2 years and last for up to 10 years. Each payment must cover atleast the monthly interest on your loan. The last payment can not be more than 3 times the amount of the first payment.',
+    ...graduatedRepayment(loan, getLoanTerm(loan))
   }),
   GRADUATED_EXTENDED: loan => ({
     label: 'Graduated Extended',
     eligible: isPlanEligible(Plans.GRADUATED_EXTENDED, loan),
-    ...graduatedRepayment(loan, getExtendedLoanTerm(loan))
+    description:
+      'You make monthly payments that increase every 2 years and last for up to 10 years. Each payment must cover atleast the monthly interest on your loan. The last payment can not be more than 3 times the amount of the first payment. You must have a loan balance of over $30K to qualify.',
+    ...graduatedRepayment(loan, 25)
   }),
   INCOME_BASED_REPAY: (loan, income) => {
     const {payment, breakdown} = incomeBasedRepayment(loan, income)
@@ -186,6 +208,9 @@ export const RepaymentPlans = {
     return {
       label: 'Income Based Repay - IBR',
       eligible: isPlanEligible(Plans.INCOME_BASED_REPAY, loan, income),
+      requirements: RepaymentRequirements[Plans.INCOME_BASED_REPAY],
+      description:
+        'You make monthly payments that are no more than 15% of your discretionary income.',
       forgiven,
       payment,
       breakdown
@@ -201,6 +226,9 @@ export const RepaymentPlans = {
     return {
       label: 'New IBR',
       eligible: isPlanEligible(Plans.INCOME_BASED_REPAY_NEW, loan, income),
+      requirements: RepaymentRequirements[Plans.INCOME_BASED_REPAY_NEW],
+      description:
+        'You make monthly payments that are no more than 10% of your discretionary income.',
       forgiven,
       payment,
       breakdown
@@ -216,6 +244,9 @@ export const RepaymentPlans = {
     return {
       label: 'Pay As Your Earn - PAYE',
       eligible: isPlanEligible(Plans.PAY_AS_YOU_EARN, loan, income),
+      requirements: RepaymentRequirements[Plans.PAY_AS_YOU_EARN],
+      description:
+        'You make monthly payments that are no more than 10% of your discretionary income.',
       forgiven,
       payment,
       breakdown
@@ -231,6 +262,9 @@ export const RepaymentPlans = {
     return {
       label: 'Revised PAYE',
       eligible: isPlanEligible(Plans.REVISED_PAY_AS_YOU_EARN, loan, income),
+      requirements: RepaymentRequirements[Plans.REVISED_PAY_AS_YOU_EARN],
+      description:
+        'You make monthly payments that are no more than 10% of your discretionary income. The first few years of your payment may be partial subsidized depending on your loan type.',
       forgiven,
       payment,
       breakdown
@@ -246,6 +280,9 @@ export const RepaymentPlans = {
     return {
       label: 'Income Contingent Repay - ICR',
       eligible: isPlanEligible(Plans.INCOME_CONTINGENT_REPAY, loan),
+      requirements: RepaymentRequirements[Plans.INCOME_CONTINGENT_REPAY],
+      description:
+        'You make monthly payments that are either 20% of your discretionary income or what you would pay under a standard 12 year plan based on your income, whichever is lesser.',
       forgiven,
       payment,
       breakdown

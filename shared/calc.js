@@ -130,8 +130,20 @@ export const isInterestSubsidized = (loan, month, limit = 36) => {
   )
 }
 
-export const getExtendedLoanTerm = loan => {
-  const {balance} = loan
+export const getLoanTerm = loan => {
+  const {balance, type} = loan
+
+  if (
+    ![
+      'DIRECT_CONSOLIDATED_SUBSIDIZED',
+      'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
+      'DIRECT_PLUS_CONSOLIDATED',
+      'FFEL_CONSOLIDATED'
+    ].includes(type)
+  ) {
+    return
+  }
+
   if (balance < 10000) {
     return 12
   } else if (balance < 20000) {
