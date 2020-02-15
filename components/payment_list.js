@@ -11,7 +11,7 @@ import DropdownButton from 'react-bootstrap/DropdownButton'
 import GripImg from '../images/grip-lines.svg'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import PropTypes from 'prop-types'
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
@@ -90,6 +90,22 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
     }
   `
 
+  // Determines if description is longer than 2 lines
+  const [moreText, setMoreText] = useState(false)
+  const textRef = useRef(null)
+  useEffect(() => {
+    const {scrollHeight, offsetHeight} = textRef.current || {}
+    if (scrollHeight > offsetHeight) {
+      setMoreText(true)
+    }
+  }, [description, textRef, setMoreText])
+
+  const [textExpanded, setTextExpanded] = useState(false)
+  const onTextClick = useCallback(() => setTextExpanded(!textExpanded), [
+    textExpanded,
+    setTextExpanded
+  ])
+
   if (!eligible) {
     return (
       <div className="bg-light p-1">
@@ -163,9 +179,19 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
         {expanded && (
           <Row>
             <Col>
-              <p className="small m-0 mt-2 bg-light p-2 rounded">
-                {description}
-              </p>
+              <div className="small mt-2 bg-light p-2 rounded">
+                <p
+                  ref={textRef}
+                  className="description m-0 position-relative"
+                  onClick={onTextClick}>
+                  {description}{' '}
+                  {!textExpanded && moreText && (
+                    <span className="d-inline-block bg-light text-muted position-absolute">
+                      ...read more
+                    </span>
+                  )}
+                </p>
+              </div>
             </Col>
           </Row>
         )}
@@ -190,6 +216,25 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
 
         h5 {
           margin: 0;
+        }
+
+        .description {
+          overflow: hidden;
+          max-height: ${textExpanded ? '10rem' : '3em'};
+          cursor: ${moreText ? 'pointer' : 'auto'};
+          transition: max-height 0.25s ease-out;
+        }
+
+        .description > span {
+          bottom: 0;
+          right: 0;
+          box-shadow: 0 4px 8px 4px #f8f9fa;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          .description > span {
+            box-shadow: 0 4px 8px 4px #343a40;
+          }
         }
       `}</style>
     </div>
