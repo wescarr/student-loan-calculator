@@ -119,7 +119,7 @@ export const RepaymentEligible = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED'
     ].includes(loan.type),
   INCOME_BASED_REPAY_NEW: (loan, income) =>
-    partialFinancialHardship(loan, income, 0.1) &&
+    partialFinancialHardship(loan, income, 0.15) &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -136,8 +136,7 @@ export const RepaymentEligible = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'DIRECT_PLUS_PRO'
     ].includes(loan.type),
-  REVISED_PAY_AS_YOU_EARN: (loan, income) =>
-    partialFinancialHardship(loan, income, 0.1) &&
+  REVISED_PAY_AS_YOU_EARN: loan =>
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',

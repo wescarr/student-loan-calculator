@@ -40,7 +40,7 @@ const Badge = ({type}) => {
         <OverlayTrigger
           overlay={
             <Tooltip>
-              <small>Payments are based on your income</small>
+              <small>Payments are based on your discretionary income</small>
             </Tooltip>
           }>
           <BadgeImg height="22px" fill="#999" />

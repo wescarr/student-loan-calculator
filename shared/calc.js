@@ -9,9 +9,9 @@ export const MONTHS = 12
 // 0 index is the amount for each dependent over 8 persons
 // Based on: https://aspe.hhs.gov/poverty-guidelines
 const FEDERAL_POVERY_LEVEL = {
-  LOWER_48: [4420, 12490, 16910, 21330, 25750, 30170, 34590, 39010, 43430],
-  ALASKA: [5530, 15600, 21130, 26660, 32190, 37720, 43250, 48780, 54310],
-  HAWAII: [5080, 14380, 19460, 24540, 29620, 34700, 39780, 44860, 49940]
+  LOWER_48: [4480, 12760, 17240, 21720, 26200, 30680, 35160, 39640, 44120],
+  ALASKA: [5600, 15950, 21550, 27150, 32750, 38350, 43950, 49550, 55150],
+  HAWAII: [5150, 14680, 19830, 24980, 30130, 35280, 40430, 45580, 50730]
 }
 
 // https://www.federalregister.gov/documents/2019/05/22/2019-10623/annual-updates-to-the-income-contingent-repayment-icr-plan-formula-for-2019-william-d-ford-federal

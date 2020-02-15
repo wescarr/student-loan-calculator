@@ -167,23 +167,36 @@ const Home = () => {
                 `}
               </div>
             )}
-          </Col>
-        </Row>
-        <Row className="justify-content-center">
-          <Col
-            key="repayments"
-            sm={12}
-            md={10}
-            lg={8}
-            xl={6}
-            className="repayments">
-            {isEligble && (
-              <PaymentList
-                payments={repayments}
-                selected={selectedPayments}
-                onSelect={onPaymentSelect}
-              />
-            )}
+            <div className="repayments">
+              {isEligble && (
+                <PaymentList
+                  payments={repayments}
+                  selected={selectedPayments}
+                  onSelect={onPaymentSelect}
+                />
+              )}
+            </div>
+            <div className="mt-4 small">
+              <p>
+                <strong>Discretionary Income:</strong> Your discrectionary
+                income is your adjsuted gross income (typically what you declare
+                in your income tax returns) minus 150% of the{' '}
+                <a
+                  href="https://aspe.hhs.gov/poverty-guidelines"
+                  rel="noopener noreferrer"
+                  target="_blank">
+                  Fedral Poverty Guideline
+                </a>{' '}
+                for your family size.
+              </p>
+              <p>
+                <strong>Partial Financial Hardship:</strong> If your annual
+                payment under the Standard Fixed 10 year plan is greater than a
+                percentage of your discrectionary income, you qualify as having
+                a partial financial hardship. The percentage is 15% for IBR
+                plans, and 10% for PAYE plans.
+              </p>
+            </div>
           </Col>
         </Row>
       </Container>
