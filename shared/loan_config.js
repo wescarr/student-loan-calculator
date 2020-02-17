@@ -180,7 +180,7 @@ export const RepaymentPlans = {
     label: 'Fixed Extended',
     eligible: isPlanEligible(Plans.FIXED_EXTENDED, loan),
     description:
-      'You must have a loan balance of over $30K in outstanding Direct Loans or over $30K in outstanding FFELP loans to qualify. You must have had no outstanding balance on a Direct Loan and/or a FFELP Loan as of October 7, 1998, or on the date you obtained a Direct Loan and/or a FFELP Loan after October 7, 1998.',
+      'You pay a fixed amount each month for up to 25 years. You must have a loan balance of over $30K in outstanding Direct Loans or over $30K in outstanding FFELP loans to qualify. You must have had no outstanding balance on a Direct Loan and/or a FFELP Loan as of October 7, 1998, or on the date you obtained a Direct Loan and/or a FFELP Loan after October 7, 1998.',
     ...fixedRateRepayment(loan, 25)
   }),
   GRADUATED: loan => ({
@@ -245,7 +245,7 @@ export const RepaymentPlans = {
       eligible: isPlanEligible(Plans.PAY_AS_YOU_EARN, loan, income),
       requirements: RepaymentRequirements[Plans.PAY_AS_YOU_EARN],
       description:
-        'You make monthly payments that are no more than 10% of your discretionary income for up to 20 years. If your payment is less than the monthly accrued interest, the government may subsidize the unpaid interest on your subsidized loans for the first three years.  FFELP and parent PLUS loans are not eligible for this plan. FFELP loans, other than parent PLUS loans, can become eligible through loan consolidation. To qualify for PAYE, you need to have borrowed your first federal student loan after October 1, 2007, and you need to have received a disbursement of a Direct Loan or a Direct Consolidation Loan on or after October 1, 2011.',
+        'You make monthly payments that are 10% of your discretionary income for up to 20 years. If your payment is less than the monthly accrued interest, the government may subsidize the unpaid interest on your subsidized loans for the first three years.  FFELP and parent PLUS loans are not eligible for this plan. FFELP loans, other than parent PLUS loans, can become eligible through loan consolidation. To qualify for PAYE, you need to have borrowed your first federal student loan after October 1, 2007, and you need to have received a disbursement of a Direct Loan or a Direct Consolidation Loan on or after October 1, 2011.',
       forgiven,
       payment,
       breakdown
@@ -281,7 +281,7 @@ export const RepaymentPlans = {
       eligible: isPlanEligible(Plans.INCOME_CONTINGENT_REPAY, loan),
       requirements: RepaymentRequirements[Plans.INCOME_CONTINGENT_REPAY],
       description:
-        'You make monthly payments that are either no more than 20% of your discretionary income or what you would pay under a standard 12-year plan based on your income, whichever is lesser for up to 25 years.  FFELP and parent PLUS loans are not eligible for this plan; however, these loans may become eligible for this plan if they are consolidated into a Direct Consolidation loan. This is the only income driven repayment plan available to parent PLUS loans that have been consolidated.',
+        'You make monthly payments that are either no more than 20% of your discretionary income or what you would pay under a standard 12-year plan based on your income, whichever is less for up to 25 years.  FFELP and parent PLUS loans are not eligible for this plan; however, these loans may become eligible for this plan if they are consolidated into a Direct Consolidation loan. This is the only income driven repayment plan available to parent PLUS loans that have been consolidated.',
       forgiven,
       payment,
       breakdown
