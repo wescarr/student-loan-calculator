@@ -119,7 +119,7 @@ export const RepaymentEligible = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED'
     ].includes(loan.type),
   INCOME_BASED_REPAY_NEW: (loan, income) =>
-    partialFinancialHardship(loan, income, 0.1) &&
+    partialFinancialHardship(loan, income, 0.15) &&
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -136,8 +136,7 @@ export const RepaymentEligible = {
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'DIRECT_PLUS_PRO'
     ].includes(loan.type),
-  REVISED_PAY_AS_YOU_EARN: (loan, income) =>
-    partialFinancialHardship(loan, income, 0.1) &&
+  REVISED_PAY_AS_YOU_EARN: loan =>
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_UNSUBSIDIZED',
@@ -174,28 +173,28 @@ export const RepaymentPlans = {
     label: 'Standard Fixed',
     eligible: isPlanEligible(Plans.STANDARD_FIXED, loan),
     description:
-      'You pay a fixed amount each month of atleast $50 for up to 10 years.',
+      'You pay a fixed amount each month of at least $50 for up to 10 years.',
     ...fixedRateRepayment(loan, getLoanTerm(loan))
   }),
   FIXED_EXTENDED: loan => ({
     label: 'Fixed Extended',
     eligible: isPlanEligible(Plans.FIXED_EXTENDED, loan),
     description:
-      'You pay a fixed amount each month of atleast $50 for up to 25 years. You must have a loan balance of over $30K to qualify.',
+      'You pay a fixed amount each month for up to 25 years. You must have a loan balance of over $30K in outstanding Direct Loans or over $30K in outstanding FFELP loans to qualify. You must have had no outstanding balance on a Direct Loan and/or a FFELP Loan as of October 7, 1998, or on the date you obtained a Direct Loan and/or a FFELP Loan after October 7, 1998.',
     ...fixedRateRepayment(loan, 25)
   }),
   GRADUATED: loan => ({
     label: 'Graduated',
     eligible: isPlanEligible(Plans.GRADUATED, loan),
     description:
-      'You make monthly payments that increase every 2 years and last for up to 10 years. Each payment must cover atleast the monthly interest on your loan. The last payment can not be more than 3 times the amount of the first payment.',
+      'You make monthly payments that increase every 2 years and last for up to 10 years. Each payment must cover at least the monthly interest on your loan. Any single payment cannot be more than 3 times greater than the amount of any other payment.',
     ...graduatedRepayment(loan, getLoanTerm(loan))
   }),
   GRADUATED_EXTENDED: loan => ({
     label: 'Graduated Extended',
     eligible: isPlanEligible(Plans.GRADUATED_EXTENDED, loan),
     description:
-      'You make monthly payments that increase every 2 years and last for up to 10 years. Each payment must cover atleast the monthly interest on your loan. The last payment can not be more than 3 times the amount of the first payment. You must have a loan balance of over $30K to qualify.',
+      'You make monthly payments that increase every 2 years and last for up to 25 years. Each payment must cover at least the monthly interest on your loan. Any single payment cannot be more than 3 times greater than the amount any other payment. You must have a loan balance of over $30K to qualify.',
     ...graduatedRepayment(loan, 25)
   }),
   INCOME_BASED_REPAY: (loan, income) => {
@@ -210,7 +209,7 @@ export const RepaymentPlans = {
       eligible: isPlanEligible(Plans.INCOME_BASED_REPAY, loan, income),
       requirements: RepaymentRequirements[Plans.INCOME_BASED_REPAY],
       description:
-        'You make monthly payments that are no more than 15% of your discretionary income.',
+        'You make monthly payments that are no more than 15% of your discretionary income for up to 25 years. If your payment is less than the monthly accrued interest, the government may subsidize the unpaid interest on your subsidized loans for the first three years. Parent PLUS loans are not eligible for this plan.',
       forgiven,
       payment,
       breakdown
@@ -228,7 +227,7 @@ export const RepaymentPlans = {
       eligible: isPlanEligible(Plans.INCOME_BASED_REPAY_NEW, loan, income),
       requirements: RepaymentRequirements[Plans.INCOME_BASED_REPAY_NEW],
       description:
-        'You make monthly payments that are no more than 10% of your discretionary income.',
+        'You make monthly payments that are no more than 10% of your discretionary income for up to 20 years. If your payment is less than the monthly accrued interest, the government may subsidize the unpaid interest on your subsidized loans for the first three years.  FFELP and parent PLUS loans are not eligible for this plan. To qualify for IBR for new borrowers, you must have had no outstanding balance on a Direct or FFELP loan when you borrowed a Direct loan on or after July 1, 2014.',
       forgiven,
       payment,
       breakdown
@@ -246,7 +245,7 @@ export const RepaymentPlans = {
       eligible: isPlanEligible(Plans.PAY_AS_YOU_EARN, loan, income),
       requirements: RepaymentRequirements[Plans.PAY_AS_YOU_EARN],
       description:
-        'You make monthly payments that are no more than 10% of your discretionary income.',
+        'You make monthly payments that are 10% of your discretionary income for up to 20 years. If your payment is less than the monthly accrued interest, the government may subsidize the unpaid interest on your subsidized loans for the first three years.  FFELP and parent PLUS loans are not eligible for this plan. FFELP loans, other than parent PLUS loans, can become eligible through loan consolidation. To qualify for PAYE, you need to have borrowed your first federal student loan after October 1, 2007, and you need to have received a disbursement of a Direct Loan or a Direct Consolidation Loan on or after October 1, 2011.',
       forgiven,
       payment,
       breakdown
@@ -264,7 +263,7 @@ export const RepaymentPlans = {
       eligible: isPlanEligible(Plans.REVISED_PAY_AS_YOU_EARN, loan, income),
       requirements: RepaymentRequirements[Plans.REVISED_PAY_AS_YOU_EARN],
       description:
-        'You make monthly payments that are no more than 10% of your discretionary income. The first few years of your payment may be partial subsidized depending on your loan type.',
+        'You make monthly payments that are no more than 10% of your discretionary income for up to 20 or 25 years. If your payment is less than the monthly accrued interest, the government may subsidize the unpaid interest on your subsidized loans for the first three years.  They will subsidize half of the unpaid interest on all loans under this plan for as long as the monthly payment amount is less than the monthly accrued interest.  FFELP and parent PLUS loans are not eligible for this plan. FFELP loans, other than parent PLUS loans, can become eligible through loan consolidation.',
       forgiven,
       payment,
       breakdown
@@ -282,7 +281,7 @@ export const RepaymentPlans = {
       eligible: isPlanEligible(Plans.INCOME_CONTINGENT_REPAY, loan),
       requirements: RepaymentRequirements[Plans.INCOME_CONTINGENT_REPAY],
       description:
-        'You make monthly payments that are either 20% of your discretionary income or what you would pay under a standard 12 year plan based on your income, whichever is lesser.',
+        'You make monthly payments that are either no more than 20% of your discretionary income or what you would pay under a standard 12-year plan based on your income, whichever is less for up to 25 years.  FFELP and parent PLUS loans are not eligible for this plan; however, these loans may become eligible for this plan if they are consolidated into a Direct Consolidation loan. This is the only income driven repayment plan available to parent PLUS loans that have been consolidated.',
       forgiven,
       payment,
       breakdown

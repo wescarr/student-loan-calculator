@@ -11,7 +11,7 @@ import DropdownButton from 'react-bootstrap/DropdownButton'
 import GripImg from '../images/grip-lines.svg'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import PropTypes from 'prop-types'
-import React, {useCallback, useEffect, useState} from 'react'
+import React, {useCallback, useEffect, useRef, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import ToggleButton from 'react-bootstrap/ToggleButton'
 import ToggleButtonGroup from 'react-bootstrap/ToggleButtonGroup'
@@ -40,7 +40,7 @@ const Badge = ({type}) => {
         <OverlayTrigger
           overlay={
             <Tooltip>
-              <small>Payments are based on your income</small>
+              <small>Payments are based on your discretionary income</small>
             </Tooltip>
           }>
           <BadgeImg height="22px" fill="#999" />
@@ -89,6 +89,39 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
       margin-right: 5px;
     }
   `
+
+  // Determines if description is longer than 2 lines
+  const textRef = useRef(null)
+  const [moreText, setMoreText] = useState(false)
+  const checkMoreText = useCallback(() => {
+    const {scrollHeight, offsetHeight} = textRef.current || {}
+    setMoreText(scrollHeight > offsetHeight)
+  }, [setMoreText])
+
+  // Toggle state for expanding/collapsing description
+  const [textExpanded, setTextExpanded] = useState(false)
+  const transition = useRef(false)
+  const onTextClick = useCallback(() => {
+    transition.current = true
+    setTextExpanded(!textExpanded)
+  }, [textExpanded, setTextExpanded])
+
+  // When the description changes, collapse it and recalc if it overflows once
+  // the transition finishes
+  useEffect(() => setTextExpanded(false), [description])
+  const onTransitionEnd = useCallback(() => {
+    if (!textExpanded) {
+      checkMoreText()
+    }
+    transition.current = false
+  }, [textExpanded, checkMoreText])
+
+  // Check for text overflow when description changes in collapsed state
+  useEffect(() => {
+    if (!(textExpanded || transition.current)) {
+      checkMoreText()
+    }
+  }, [description, checkMoreText, textExpanded])
 
   if (!eligible) {
     return (
@@ -163,9 +196,20 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
         {expanded && (
           <Row>
             <Col>
-              <p className="small m-0 mt-2 bg-light p-2 rounded">
-                {description}
-              </p>
+              <div className="small mt-2 bg-light p-2 rounded">
+                <p
+                  ref={textRef}
+                  className="description m-0 position-relative"
+                  onTransitionEnd={onTransitionEnd}
+                  onClick={onTextClick}>
+                  {description}{' '}
+                  {!textExpanded && moreText && (
+                    <span className="d-inline-block bg-light text-muted position-absolute">
+                      ...read more
+                    </span>
+                  )}
+                </p>
+              </div>
             </Col>
           </Row>
         )}
@@ -190,6 +234,25 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
 
         h5 {
           margin: 0;
+        }
+
+        .description {
+          overflow: hidden;
+          max-height: ${textExpanded ? '10rem' : '3em'};
+          cursor: ${moreText ? 'pointer' : 'auto'};
+          transition: max-height 0.25s ease-out;
+        }
+
+        .description > span {
+          bottom: 0;
+          right: 0;
+          box-shadow: 0 4px 8px 4px #f8f9fa;
+        }
+
+        @media (prefers-color-scheme: dark) {
+          .description > span {
+            box-shadow: 0 4px 8px 4px #343a40;
+          }
         }
       `}</style>
     </div>
