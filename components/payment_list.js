@@ -189,7 +189,7 @@ const Tile = ({payment, versus, compare, expanded, ...rest}) => {
             <Chart
               payments={[payment, versus].filter(Boolean)}
               compare={compare}
-              options={{height: 100}}
+              options={{height: 90}}
             />
           </Col>
         </Row>

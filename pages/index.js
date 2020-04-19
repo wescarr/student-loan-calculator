@@ -106,6 +106,11 @@ const Home = () => {
               <h1 className="h2">Student Loan Calculator</h1>
               <p className="lead">
                 Find the best options for repaying your student loans
+                <br />
+                Developed in partnership with{' '}
+                <a href="http://freestudentloanadvice.org/">
+                  The Institute of Student Loan Advisors
+                </a>
               </p>
             </div>
             <div>
@@ -167,6 +172,10 @@ const Home = () => {
                 `}
               </div>
             )}
+          </Col>
+        </Row>
+        <Row className="justify-content-center">
+          <Col sm={8} md={8} lg={6}>
             <div className="repayments">
               {isEligble && (
                 <PaymentList
