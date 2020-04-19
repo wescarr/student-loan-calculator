@@ -104,8 +104,8 @@ const Home = () => {
         <Row className="justify-content-center">
           <Col sm={8} md={8} lg={6} xl={5}>
             <div className="text-center mt-3 mb-4">
-              <h1 className="h2">Student Loan Calculator</h1>
-              <p className="lead">
+              <h1 className="mt-5 mb-0">Student Loan Calculator</h1>
+              <p className="font-italic">
                 Find the best options for repaying{' '}
                 <span className="text-nowrap">your student loans</span>
               </p>
