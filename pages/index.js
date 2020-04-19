@@ -10,6 +10,7 @@ import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import Settings from '../components/settings'
 import SettingsImg from '../images/cog.svg'
+import WrenchImg from '../images/wrench.svg'
 import css from 'styled-jsx/css'
 import {
   consolidateLoans,
@@ -105,10 +106,14 @@ const Home = () => {
             <div className="text-center mt-3 mb-4">
               <h1 className="h2">Student Loan Calculator</h1>
               <p className="lead">
-                Find the best options for repaying your student loans
-                <br />
-                Developed in partnership with{' '}
-                <a href="http://freestudentloanadvice.org/">
+                Find the best options for repaying{' '}
+                <span className="text-nowrap">your student loans</span>
+              </p>
+              Developed in partnership with{' '}
+              <p className="mb-5">
+                <a
+                  href="http://freestudentloanadvice.org/"
+                  className="text-nowrap">
                   The Institute of Student Loan Advisors
                 </a>
               </p>
@@ -205,6 +210,12 @@ const Home = () => {
                 a partial financial hardship. The percentage is 15% for IBR
                 plans, and 10% for PAYE plans.
               </p>
+            </div>
+            <div className="mt-5 mb-5 text-center">
+              <span className="small d-inline-block p-2 bg-light rounded-pill">
+                <WrenchImg width="16" title="Created" /> by{' '}
+                <a href="https://www.linkedin.com/in/wescarr">Wes Carr</a>
+              </span>
             </div>
           </Col>
         </Row>
