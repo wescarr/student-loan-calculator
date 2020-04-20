@@ -43,7 +43,7 @@ const Home = () => {
     dependents: 1,
     state: States.LOWER_48,
     filing: 'SINGLE',
-    rates: {income: 0.05, inflation: 0.0236}
+    rates: {income: 0.025, inflation: 0.0236}
   })
   const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
 
