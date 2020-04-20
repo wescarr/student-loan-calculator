@@ -10,6 +10,7 @@ import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import Settings from '../components/settings'
 import SettingsImg from '../images/cog.svg'
+import WrenchImg from '../images/wrench.svg'
 import css from 'styled-jsx/css'
 import {
   consolidateLoans,
@@ -42,7 +43,7 @@ const Home = () => {
     dependents: 1,
     state: States.LOWER_48,
     filing: 'SINGLE',
-    rates: {income: 0.05, inflation: 0.0236}
+    rates: {income: 0.025, inflation: 0.0236}
   })
   const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
 
@@ -103,9 +104,18 @@ const Home = () => {
         <Row className="justify-content-center">
           <Col sm={8} md={8} lg={6} xl={5}>
             <div className="text-center mt-3 mb-4">
-              <h1 className="h2">Student Loan Calculator</h1>
-              <p className="lead">
-                Find the best options for repaying your student loans
+              <h1 className="mt-5 mb-0">Student Loan Calculator</h1>
+              <p className="font-italic">
+                Find the best options for repaying{' '}
+                <span className="text-nowrap">your student loans</span>
+              </p>
+              Developed in partnership with{' '}
+              <p className="mb-5">
+                <a
+                  href="http://freestudentloanadvice.org/"
+                  className="text-nowrap">
+                  The Institute of Student Loan Advisors
+                </a>
               </p>
             </div>
             <div>
@@ -167,6 +177,10 @@ const Home = () => {
                 `}
               </div>
             )}
+          </Col>
+        </Row>
+        <Row className="justify-content-center">
+          <Col sm={8} md={8} lg={6}>
             <div className="repayments">
               {isEligble && (
                 <PaymentList
@@ -196,6 +210,12 @@ const Home = () => {
                 a partial financial hardship. The percentage is 15% for IBR
                 plans, and 10% for PAYE plans.
               </p>
+            </div>
+            <div className="mt-5 mb-5 text-center">
+              <span className="small d-inline-block p-2 bg-light rounded-pill">
+                <WrenchImg width="16" title="Created" /> by{' '}
+                <a href="https://www.linkedin.com/in/wescarr">Wes Carr</a>
+              </span>
             </div>
           </Col>
         </Row>
