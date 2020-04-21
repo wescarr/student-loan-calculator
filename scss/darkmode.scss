@@ -11,6 +11,10 @@
     background-color: $dark !important;
   }
 
+  .bg-light svg {
+    fill: $white;
+  }
+
   .bg-white,
   .card {
     background-color: $gray-900 !important;

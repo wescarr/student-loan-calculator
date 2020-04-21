@@ -94,7 +94,7 @@ const Home = () => {
     <>
       <Head>
         <title>Student Loan Calculator</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/calculator.svg" />
         <link
           href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap"
           rel="stylesheet"

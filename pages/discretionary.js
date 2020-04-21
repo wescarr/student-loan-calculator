@@ -9,7 +9,7 @@ const Discretionary = () => (
   <>
     <Head>
       <title>Discretionary Income CalculatorHome</title>
-      <link rel="icon" href="/favicon.ico" />
+      <link rel="icon" href="/calculator.svg" />
     </Head>
     <Container>
       <Row className="justify-content-center">
