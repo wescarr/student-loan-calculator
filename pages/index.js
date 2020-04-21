@@ -220,6 +220,7 @@ const Home = () => {
           </Col>
         </Row>
       </Container>
+      <script src="https://cdn.usefathom.com/3.js" site="YHLFLMFH" />
       {styles}
       <style jsx>{`
         .bg-light.rounded-bottom {
