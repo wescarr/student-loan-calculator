@@ -231,7 +231,9 @@ const Home = () => {
             <div className="mt-5 mb-5 text-center">
               <span className="small d-inline-block p-2 bg-light rounded-pill">
                 <WrenchImg width="16" title="Created" /> by{' '}
-                <a href="https://www.linkedin.com/in/wescarr">Wes Carr</a>
+                <a href="https://github.com/wescarr/student-loan-calculator">
+                  Wes Carr
+                </a>
               </span>
             </div>
           </Col>
