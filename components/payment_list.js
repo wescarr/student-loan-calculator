@@ -277,13 +277,9 @@ const PaymentList = ({payments}) => {
   const [compare, setCompare] = useState('payment')
   const onCompare = useCallback(setCompare, [compare, setCompare])
 
-  useEffect(
-    () =>
-      setSelected(
-        eligible.find(p => p.label === selected.label) || eligible[0]
-      ),
-    [eligible, selected, setSelected]
-  )
+  useEffect(() => {
+    setSelected(eligible.find(p => p.label === selected.label) || eligible[0])
+  }, [eligible, selected, setSelected])
 
   const [detail, setDetail] = useState(true)
   const onDetailChange = useCallback(value => setDetail(value), [setDetail])
@@ -305,6 +301,15 @@ const PaymentList = ({payments}) => {
     endingBalance: 'Balance',
     totalPayment: 'Total payment',
     totalInterest: 'Total interest'
+  }
+
+  if (eligible.length === 0) {
+    return (
+      <p className="lead mt-2 text-center">
+        Based on your loans and income, you do not qualify for any repayment
+        plans.
+      </p>
+    )
   }
 
   return (
