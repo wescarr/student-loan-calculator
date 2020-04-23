@@ -199,7 +199,7 @@ export const incomeBasedRepayment = (
     disRate
   )
 
-  return {payment: breakdown[0].payment, breakdown}
+  return {payment: breakdown.length ? breakdown[0].payment : 0, breakdown}
 }
 
 export const getIncomeBreakdown = (
@@ -285,7 +285,7 @@ export const payeBasedRepayment = (
     repay
   )
 
-  return {payment: breakdown[0].payment, breakdown}
+  return {payment: breakdown.length ? breakdown[0].payment : 0, breakdown}
 }
 
 export const getPayeBreakdown = (
@@ -369,7 +369,7 @@ export const icrBasedRepayment = (loan, income, term = 25) => {
 
   const breakdown = getIcrBreakdown(balance, rate, term, income)
 
-  return {payment: breakdown[0].payment, breakdown}
+  return {payment: breakdown.length ? breakdown[0].payment : 0, breakdown}
 }
 
 export const getIcrBreakdown = (balance, interestRate, term, income) => {

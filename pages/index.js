@@ -9,6 +9,8 @@ import PaymentList from '../components/payment_list'
 import React, {useCallback, useEffect, useReducer, useState} from 'react'
 import Row from 'react-bootstrap/Row'
 import Settings from '../components/settings'
+import Share from '../components/share'
+import ShareImg from '../images/share.svg'
 import SettingsImg from '../images/cog.svg'
 import WrenchImg from '../images/wrench.svg'
 import css from 'styled-jsx/css'
@@ -17,6 +19,7 @@ import {
   getRepaymentOpions,
   LoanTypes
 } from '../shared/loan_config'
+import {useRouteConfig} from '../shared/hooks'
 import {States} from '../shared/calc'
 
 // Colors: https://blog.graphiq.com/finding-the-right-color-palettes-for-data-visualizations-fcd4e707a283
@@ -84,6 +87,8 @@ const Home = () => {
     repayments.slice(0, 2).map(r => r.label)
   )
 
+  useRouteConfig(config => setIncome(config.income))
+
   const {className, styles} = css.resolve`
     .nav-item {
       flex: none;
@@ -134,6 +139,14 @@ const Home = () => {
                     />
                   </Nav.Link>
                 </Nav.Item>
+                <Nav.Item className={className}>
+                  <Nav.Link eventKey="share">
+                    <ShareImg
+                      width={19}
+                      fill={nav === 'share' ? '#fff' : '#aaa'}
+                    />
+                  </Nav.Link>
+                </Nav.Item>
               </Nav>
               <div className="pt-3 px-2">
                 {nav === 'income' ? (
@@ -142,9 +155,13 @@ const Home = () => {
                   </div>
                 ) : nav === 'loan' ? (
                   <LoanList loans={loans} income={income} onChange={setLoans} />
-                ) : (
+                ) : nav === 'settings' ? (
                   <div className="shadow border rounded px-3 pt-3 pb-1 mb-4">
                     <Settings rates={income.rates} onChange={onRatesChange} />
+                  </div>
+                ) : (
+                  <div className="shadow border rounded px-3 pt-3 pb-1 mb-4">
+                    <Share loans={loans} income={income} />
                   </div>
                 )}
               </div>
