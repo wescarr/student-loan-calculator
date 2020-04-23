@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useReducer} from 'react'
 import ReactCssTransition from 'react-addons-css-transition-group'
 import {consolidateLoans} from '../shared/loan_config.js'
 import {currency, formatFloat, plural} from '../shared/helpers'
-import {listReducer} from '../shared/hooks'
+import {listReducer, useRouteConfig} from '../shared/hooks'
 
 let LOAN_ID = 1
 
@@ -56,6 +56,11 @@ const LoanList = ({loans, income, onChange}) => {
   useEffect(() => {
     onChange(list)
   }, [list, onChange])
+
+  useRouteConfig(config => {
+    updateList({type: 'replaceAll', data: config.loans})
+    LOAN_ID = config.loans.length
+  })
 
   const loan = useMemo(() => consolidateLoans(list, income), [list, income])
 
