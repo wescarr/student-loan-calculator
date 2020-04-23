@@ -15,3 +15,15 @@ Additionally the current tool:
 
 The nitty gritty of how all these programs work is mostly captured here:
 https://drive.google.com/drive/folders/11vuc6_gN_nULvqU6xMUUtHARifGuENnm?usp=sharing
+
+## Setup and local development
+
+The calculator is built on the Next.js framework on deployed on [Vercel](https://vercel.com)
+You will need to [install Node.js](https://nodejs.org) and then run the following:
+
+```bash
+npm install
+npm run dev
+```
+
+This will launch the local development server on http://localhost:3000
