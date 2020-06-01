@@ -14,41 +14,41 @@ const FEDERAL_POVERY_LEVEL = {
   HAWAII: [5150, 14680, 19830, 24980, 30130, 35280, 40430, 45580, 50730]
 }
 
-// https://www.federalregister.gov/documents/2019/05/22/2019-10623/annual-updates-to-the-income-contingent-repayment-icr-plan-formula-for-2019-william-d-ford-federal
+// https://s3.amazonaws.com/public-inspection.federalregister.gov/2020-11818.pdf
 const INCOME_PERCENTAGE_FACTOR = (year, inflation) => {
   inflation = Math.pow(1 + inflation, year)
 
   const factors = {
     single: [
-      {income: 12147, factor: 0.55},
-      {income: 16714, factor: 0.5779},
-      {income: 21506, factor: 0.6057},
-      {income: 26407, factor: 0.6623},
-      {income: 31087, factor: 0.7189},
-      {income: 36989, factor: 0.8033},
-      {income: 46460, factor: 0.8877},
-      {income: 58269, factor: 1.0},
-      {income: 70081, factor: 1.0},
-      {income: 84229, factor: 1.118},
-      {income: 107852, factor: 1.235},
-      {income: 152755, factor: 1.412},
-      {income: 175147, factor: 1.5},
-      {income: 311967, factor: 2.0}
+      {income: 12392, factor: 0.55},
+      {income: 17051, factor: 0.5779},
+      {income: 21940, factor: 0.6057},
+      {income: 26940, factor: 0.6623},
+      {income: 31715, factor: 0.7189},
+      {income: 37736, factor: 0.8033},
+      {income: 47398, factor: 0.8877},
+      {income: 59445, factor: 1.0},
+      {income: 71496, factor: 1.0},
+      {income: 85929, factor: 1.118},
+      {income: 110029, factor: 1.235},
+      {income: 115839, factor: 1.412},
+      {income: 178683, factor: 1.5},
+      {income: 318265, factor: 2.0}
     ],
     married: [
-      {income: 12147, factor: 0.5052},
-      {income: 19165, factor: 0.5668},
-      {income: 22839, factor: 0.5956},
-      {income: 29858, factor: 0.6779},
-      {income: 36989, factor: 0.7522},
-      {income: 46460, factor: 0.8761},
-      {income: 58268, factor: 1.0},
-      {income: 70081, factor: 1.0},
-      {income: 87800, factor: 1.094},
-      {income: 117322, factor: 1.25},
-      {income: 158657, factor: 1.406},
-      {income: 221889, factor: 1.5},
-      {income: 362583, factor: 2.0}
+      {income: 12392, factor: 0.5052},
+      {income: 19552, factor: 0.5668},
+      {income: 23300, factor: 0.5956},
+      {income: 30461, factor: 0.6779},
+      {income: 37736, factor: 0.7522},
+      {income: 47398, factor: 0.8761},
+      {income: 59444, factor: 1.0},
+      {income: 71496, factor: 1.0},
+      {income: 89573, factor: 1.094},
+      {income: 119691, factor: 1.25},
+      {income: 161860, factor: 1.406},
+      {income: 226369, factor: 1.5},
+      {income: 369903, factor: 2.0}
     ]
   }
 
