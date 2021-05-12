@@ -13,7 +13,7 @@
     "@standardlabs/react-hooks": "1.0.3",
     "@zeit/next-sass": "^1.0.1",
     "bootstrap": "^4.3.1",
-    "chart.js": "^2.9.0",
+    "chart.js": "^2.9.4",
     "next": "^9.3.2",
     "next-images": "^1.2.0",
     "node-sass": "^4.12.0",
