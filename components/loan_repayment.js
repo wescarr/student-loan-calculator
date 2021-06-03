@@ -4,18 +4,15 @@ import Form from 'react-bootstrap/Form'
 import InputGroup from 'react-bootstrap/InputGroup'
 import PaymentTable from './payment_table'
 import React from 'react'
-import dynamic from 'next/dynamic'
+import {Line} from 'react-chartjs-2'
 import {currency} from '../shared/helpers'
 import {getFixedPayment, getFixedBreakdown} from '../shared/calc'
-
 import {
   asFloat,
   asInt,
   useDeferredOnChange,
   useOnChange
 } from '@standardlabs/react-hooks'
-
-const Line = dynamic(import('react-chartjs-2').then(mod => mod.Line))
 
 const LoanRepayment = props => {
   const [balance, onBalanceChange] = useDeferredOnChange(10000, 150, asInt)

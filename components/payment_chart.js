@@ -1,9 +1,7 @@
 import PropTypes from 'prop-types'
 import React from 'react'
-import dynamic from 'next/dynamic'
 import {currency, hexToRgbA, simplifyCurrency} from '../shared/helpers'
-
-const LineChart = dynamic(import('react-chartjs-2').then(mod => mod.Line))
+import {Line as LineChart} from 'react-chartjs-2'
 
 const getYearBreakdown = (breakdown, attr) => {
   const years = []
@@ -29,45 +27,39 @@ const dataset = (label, data, bgColor) => ({
 })
 
 const chartOptions = {
-  legend: {display: false},
-  scales: {
-    xAxes: [
-      {
-        gridLines: {display: false},
-        ticks: {
-          display: false,
-          callback: n =>
-            n % 2 ? new Date().getFullYear() + parseInt(n) - 1 : '',
-          min: 0
-        }
+  plugins: {
+    legend: {display: false},
+    tooltip: {
+      // Draws tooltips whenever the mouse hovers over the chart. This is
+      // useful because we draw the same tooltip for each bar in a "bar" in a
+      // group of bars and it is a bit jarring to continually redraw the same
+      // tooltip as the mouse moves across the bars.
+      intersect: false,
+      // This includes every dataset in a group of bars inside the tooltip.
+      mode: 'index',
+      displayColors: false,
+      callbacks: {
+        label: ctx => `${ctx.dataset.label}: ${currency(ctx.raw)}`,
+        title: ctx => `Year ${ctx[0].label}`
       }
-    ],
-    yAxes: [
-      {
-        gridLines: {display: false},
-        ticks: {
-          beginAtZero: true,
-          callback: (value, index, values) =>
-            // Show alternate values, starting with labels > 0
-            index % 2 === values.length % 2 ? simplifyCurrency(value) : '',
-          min: 0
-        }
-      }
-    ]
+    }
   },
-  tooltips: {
-    // Draws tooltips whenever the mouse hovers over the chart. This is
-    // useful because we draw the same tooltip for each bar in a "bar" in a
-    // group of bars and it is a bit jarring to continually redraw the same
-    // tooltip as the mouse moves across the bars.
-    intersect: false,
-    // This includes every dataset in a group of bars inside the tooltip.
-    mode: 'index',
-    displayColors: false,
-    callbacks: {
-      label: (item, data) =>
-        `${data.datasets[item.datasetIndex].label}: ${currency(item.yLabel)}`,
-      title: item => `Year ${item[0].label}`
+  scales: {
+    x: {
+      min: 0,
+      grid: {display: false, drawBorder: false},
+      ticks: {
+        display: false
+      }
+    },
+    y: {
+      beginAtZero: true,
+      min: 0,
+      grid: {display: false, drawBorder: false},
+      ticks: {
+        callback: (value, index) =>
+          index > 0 && index % 2 ? simplifyCurrency(value) : null
+      }
     }
   }
 }

@@ -2,7 +2,7 @@ import Button from 'react-bootstrap/Button'
 import Loan from './loan'
 import PropTypes from 'prop-types'
 import React, {useCallback, useEffect, useMemo, useReducer} from 'react'
-import ReactCssTransition from 'react-addons-css-transition-group'
+import {CSSTransitionGroup} from 'react-transition-group'
 import {consolidateLoans} from '../shared/loan_config.js'
 import {currency, formatFloat, plural} from '../shared/helpers'
 import {listReducer, useRouteConfig} from '../shared/hooks'
@@ -67,7 +67,7 @@ const LoanList = ({loans, income, onChange}) => {
   return (
     <>
       <div>
-        <ReactCssTransition
+        <CSSTransitionGroup
           component="div"
           transitionName="loan"
           transitionEnterTimeout={250}
@@ -81,7 +81,7 @@ const LoanList = ({loans, income, onChange}) => {
               onClick={onLoanClick}
             />
           ))}
-        </ReactCssTransition>
+        </CSSTransitionGroup>
       </div>
       <div className="bg-light p-3 mb-3 d-flex rounded-bottom">
         <div className="flex-grow-1">
