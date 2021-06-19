@@ -1,7 +1,7 @@
 export const States = {
   LOWER_48: 'LOWER_48',
   ALASKA: 'ALASKA',
-  HAWAII: 'HAWAII'
+  HAWAII: 'HAWAII',
 }
 
 export const MONTHS = 12
@@ -11,7 +11,7 @@ export const MONTHS = 12
 const FEDERAL_POVERY_LEVEL = {
   LOWER_48: [4480, 12760, 17240, 21720, 26200, 30680, 35160, 39640, 44120],
   ALASKA: [5600, 15950, 21550, 27150, 32750, 38350, 43950, 49550, 55150],
-  HAWAII: [5150, 14680, 19830, 24980, 30130, 35280, 40430, 45580, 50730]
+  HAWAII: [5150, 14680, 19830, 24980, 30130, 35280, 40430, 45580, 50730],
 }
 
 // https://s3.amazonaws.com/public-inspection.federalregister.gov/2020-11818.pdf
@@ -33,7 +33,7 @@ const INCOME_PERCENTAGE_FACTOR = (year, inflation) => {
       {income: 110029, factor: 1.235},
       {income: 115839, factor: 1.412},
       {income: 178683, factor: 1.5},
-      {income: 318265, factor: 2.0}
+      {income: 318265, factor: 2.0},
     ],
     married: [
       {income: 12392, factor: 0.5052},
@@ -48,18 +48,19 @@ const INCOME_PERCENTAGE_FACTOR = (year, inflation) => {
       {income: 119691, factor: 1.25},
       {income: 161860, factor: 1.406},
       {income: 226369, factor: 1.5},
-      {income: 369903, factor: 2.0}
-    ]
+      {income: 369903, factor: 2.0},
+    ],
   }
 
-  factors.single.forEach(f => (f.income = f.income * inflation))
-  factors.married.forEach(f => (f.income = f.income * inflation))
+  factors.single.forEach((f) => (f.income = f.income * inflation))
+  factors.married.forEach((f) => (f.income = f.income * inflation))
 
   return factors
 }
 
 export const getIncomePercentageFactor = (income, year = 0) => {
-  const {agi, rates, filing} = income
+  const {rates, filing} = income
+  const agi = getTotalIncome(income)
   const list = INCOME_PERCENTAGE_FACTOR(year, rates.inflation)[
     filing === 'SINGLE' ? 'single' : 'married'
   ]
@@ -97,8 +98,21 @@ export const getPovertyLevel = (income, year = 0) => {
   return level * Math.pow(1 + rates.inflation, year)
 }
 
+export const getTotalIncome = (income) => {
+  const {agi, agi_spouse = 0, filing} = income
+
+  switch (filing) {
+    case 'MARRIED_JOINT':
+      return agi + agi_spouse
+    case 'MARRIED_SEPARATE':
+    case 'SINGLE':
+    default:
+      return agi
+  }
+}
+
 export const getDiscretionaryIncome = (income, year) =>
-  Math.max(0, income.agi - getPovertyLevel(income, year) * 1.5)
+  Math.max(0, getTotalIncome(income) - getPovertyLevel(income, year) * 1.5)
 
 export const partialFinancialHardship = (loan, income, rate = 0.15) => {
   const {payment} = fixedRateRepayment(loan, 10)
@@ -113,7 +127,7 @@ export const proRatedTerm = (loan, term, idr = false) => {
       'GRADUATED',
       'FIXED_EXTENDED',
       'GRADUATED_EXTENDED',
-      'STANDARD_CONSOLIDATED'
+      'STANDARD_CONSOLIDATED',
     ].includes(loan.plan)
     ? term
     : (term * MONTHS - loan.payments) / MONTHS
@@ -125,12 +139,12 @@ export const isInterestSubsidized = (loan, month, limit = 36) => {
     [
       'DIRECT_SUBSIDIZED',
       'DIRECT_CONSOLIDATED_SUBSIDIZED',
-      'STAFFORD_SUBSIDIZED'
+      'STAFFORD_SUBSIDIZED',
     ].includes(loan.type) && month <= limit - loan.payments
   )
 }
 
-export const getLoanTerm = loan => {
+export const getLoanTerm = (loan) => {
   const {balance, type} = loan
 
   if (
@@ -138,7 +152,7 @@ export const getLoanTerm = loan => {
       'DIRECT_CONSOLIDATED_SUBSIDIZED',
       'DIRECT_CONSOLIDATED_UNSUBSIDIZED',
       'DIRECT_PLUS_CONSOLIDATED',
-      'FFEL_CONSOLIDATED'
+      'FFEL_CONSOLIDATED',
     ].includes(type)
   ) {
     return
@@ -210,7 +224,8 @@ export const getIncomeBreakdown = (
   income,
   discretionaryRate
 ) => {
-  let {agi, rates} = income
+  let {rates} = income
+  let agi = getTotalIncome(income)
   let discrectionary = getDiscretionaryIncome(income)
   const initialPayment = (discrectionary / MONTHS) * discretionaryRate
   const maxPayment = getFixedPayment(balance, interestRate, 10)
@@ -224,7 +239,7 @@ export const getIncomeBreakdown = (
         payment: initialPayment,
         endingBalance: balance,
         totalInterest: 0,
-        totalPayment: 0
+        totalPayment: 0,
       }
     }
 
@@ -255,7 +270,7 @@ export const getIncomeBreakdown = (
       principle,
       endingBalance,
       totalInterest,
-      totalPayment
+      totalPayment,
     })
 
     if (endingBalance <= 0) {
@@ -297,7 +312,8 @@ export const getPayeBreakdown = (
   discretionaryRate,
   repay
 ) => {
-  let {agi, rates} = income
+  let {rates} = income
+  let agi = getTotalIncome(income)
   let discrectionary = getDiscretionaryIncome(income)
   const initialPayment = (discrectionary / MONTHS) * discretionaryRate
   const maxPayment = repay
@@ -313,7 +329,7 @@ export const getPayeBreakdown = (
         payment: initialPayment,
         endingBalance: balance,
         totalInterest: 0,
-        totalPayment: 0
+        totalPayment: 0,
       }
     }
 
@@ -352,7 +368,7 @@ export const getPayeBreakdown = (
       principle,
       endingBalance,
       totalInterest,
-      totalPayment
+      totalPayment,
     })
 
     if (endingBalance <= 0) {
@@ -373,7 +389,8 @@ export const icrBasedRepayment = (loan, income, term = 25) => {
 }
 
 export const getIcrBreakdown = (balance, interestRate, term, income) => {
-  let {agi, rates} = income
+  let {rates} = income
+  let agi = getTotalIncome(income)
   let discrectionary = agi - getPovertyLevel(income)
   let incomeFactor = getIncomePercentageFactor(income)
   let rollingIncome = income
@@ -391,7 +408,7 @@ export const getIcrBreakdown = (balance, interestRate, term, income) => {
         payment: initialPayment,
         endingBalance: balance,
         totalInterest: 0,
-        totalPayment: 0
+        totalPayment: 0,
       }
     }
 
@@ -424,7 +441,7 @@ export const getIcrBreakdown = (balance, interestRate, term, income) => {
       principle,
       endingBalance,
       totalInterest,
-      totalPayment
+      totalPayment,
     })
 
     if (endingBalance <= 0) {
@@ -461,7 +478,7 @@ export const getFixedBreakdown = (payment, balance, interestRate, term) => {
         payment,
         endingBalance: balance,
         totalInterest: 0,
-        totalPayment: 0
+        totalPayment: 0,
       }
     }
 
@@ -478,7 +495,7 @@ export const getFixedBreakdown = (payment, balance, interestRate, term) => {
       principle,
       endingBalance,
       totalInterest,
-      totalPayment
+      totalPayment,
     })
   }
 
@@ -553,7 +570,7 @@ export const getGraduatedBreakdown = (
         payment: initialPayment,
         endingBalance: balance,
         totalInterest: 0,
-        totalPayment: 0
+        totalPayment: 0,
       }
     }
 
@@ -575,7 +592,7 @@ export const getGraduatedBreakdown = (
       principle,
       endingBalance,
       totalInterest,
-      totalPayment
+      totalPayment,
     })
 
     if (last.endingBalance <= 0) {

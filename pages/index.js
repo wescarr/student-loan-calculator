@@ -17,7 +17,7 @@ import css from 'styled-jsx/css'
 import {
   consolidateLoans,
   getRepaymentOpions,
-  LoanTypes
+  LoanTypes,
 } from '../shared/loan_config'
 import {useRouteConfig} from '../shared/hooks'
 import {States} from '../shared/calc'
@@ -32,7 +32,7 @@ const Colors = [
   '#a34428',
   '#f19a9b',
   '#7b2995',
-  '#461664'
+  '#461664',
 ]
 
 const Home = () => {
@@ -43,12 +43,13 @@ const Home = () => {
   }
   const [income, setIncome] = useReducer(incomeReducer, {
     agi: 30000,
+    agi_spouse: 25000,
     dependents: 1,
     state: States.LOWER_48,
     filing: 'SINGLE',
-    rates: {income: 0.025, inflation: 0.0236}
+    rates: {income: 0.025, inflation: 0.0236},
   })
-  const onRatesChange = useCallback(rates => setIncome({rates}), [setIncome])
+  const onRatesChange = useCallback((rates) => setIncome({rates}), [setIncome])
 
   const [loans, setLoans] = useState([
     {
@@ -58,17 +59,17 @@ const Home = () => {
       type: 'DIRECT_SUBSIDIZED',
       plan: '',
       payments: 0,
-      expanded: true
-    }
+      expanded: true,
+    },
   ])
   const [loan, setLoan] = useState(consolidateLoans(loans, income))
   useEffect(() => {
     setLoan(consolidateLoans(loans, income))
   }, [income, loans, setLoans])
 
-  const onPaymentSelect = label => {
+  const onPaymentSelect = (label) => {
     if (selectedPayments.includes(label) && selectedPayments.length > 1) {
-      setSelectedPayments(selectedPayments.filter(l => l !== label))
+      setSelectedPayments(selectedPayments.filter((l) => l !== label))
     } else {
       setSelectedPayments([...selectedPayments, label])
     }
@@ -80,14 +81,14 @@ const Home = () => {
 
   const repayments = getRepaymentOpions(loan, income).map((r, i) => ({
     ...r,
-    color: Colors[i]
+    color: Colors[i],
   }))
 
   const [selectedPayments, setSelectedPayments] = useState(
-    repayments.slice(0, 2).map(r => r.label)
+    repayments.slice(0, 2).map((r) => r.label)
   )
 
-  useRouteConfig(config => setIncome(config.income))
+  useRouteConfig((config) => setIncome(config.income))
 
   const {className, styles} = css.resolve`
     .nav-item {
@@ -118,7 +119,8 @@ const Home = () => {
               <p className="mb-5">
                 <a
                   href="http://freestudentloanadvice.org/"
-                  className="text-nowrap">
+                  className="text-nowrap"
+                >
                   The Institute of Student Loan Advisors
                 </a>
               </p>
@@ -168,7 +170,8 @@ const Home = () => {
               {!nav === 'loan' && !income && (
                 <div
                   className="bg-light px-3 py-2 rounded-bottom"
-                  onClick={() => setNav('income')}>
+                  onClick={() => setNav('income')}
+                >
                   <small className="text-muted">
                     Enter your income to see additional options
                   </small>
@@ -215,7 +218,8 @@ const Home = () => {
                 <a
                   href="https://aspe.hhs.gov/poverty-guidelines"
                   rel="noopener noreferrer"
-                  target="_blank">
+                  target="_blank"
+                >
                   Fedral Poverty Guideline
                 </a>{' '}
                 for your family size.
